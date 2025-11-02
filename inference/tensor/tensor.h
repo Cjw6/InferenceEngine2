@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,11 +9,11 @@
 
 namespace inference {
 
-enum TensorDeviceType { kCPU = 0, kGPU = 1 };
+enum DeviceType { kCPU = 0, kGPU = 1, kNPU = 2 };
 
 enum TensorDataType {
-  kFloat32 = 0,
-  kFloat16 = 1,
+  kFP32 = 0,
+  kFP16 = 1,
   kInt8 = 2,
   kUint8 = 3,
 };
@@ -24,7 +23,7 @@ using TensorShape = std::vector<int64_t>;
 struct TensorDesc {
   // std::string name;
   // TensorShape min_shape;
-  TensorDataType data_type = kFloat32;
+  TensorDataType data_type = kFP32;
   TensorShape shape;
   int64_t element_size = 0;
   // TensorShape max_shape;
@@ -33,12 +32,12 @@ struct TensorDesc {
 struct TensorDataPointer {
   TensorDataPointer() : p(nullptr), size(0), device_type(kCPU) {}
   TensorDataPointer(void *p, int64_t size, const TensorShape &shape,
-                    TensorDeviceType device_type)
+                    DeviceType device_type)
       : p(p), size(size), shape(shape), device_type(device_type) {}
   void *p;
   int64_t size;
   TensorShape shape;
-  TensorDeviceType device_type;
+  DeviceType device_type;
 };
 
 using InputNodeNames = std::vector<std::string>;
@@ -56,7 +55,7 @@ int64_t ShapeElemNum(const std::vector<int64_t> &v);
 int64_t GetTensorSize(TensorDataType data_type, int64_t element_size,
                       DeviceBuffer buffer_type);
 
-TensorBufferUPtr CreateTensorBuffer(TensorDataType data_type,
-                                    int64_t element_size,
-                                    TensorDeviceType device_type);
+TensorBufferUPtr CreateTensorHostBuffer(TensorDataType data_type,
+                                        int64_t element_size,
+                                        DeviceType device_type);
 } // namespace inference

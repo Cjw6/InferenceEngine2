@@ -67,14 +67,14 @@ DeviceBuffer &DeviceBuffer::operator=(DeviceBuffer &&other) noexcept {
 void DeviceBuffer::allocate(size_t size) {
   if (size > size_) {
     free();
-    CHECK(cudaMalloc(&device_, size)); // < 分配设备内存
+    CUDA_CHECK(cudaMalloc(&device_, size)); // < 分配设备内存
     size_ = size;
   }
 }
 
 void DeviceBuffer::free() {
   if (device_)
-    CHECK(cudaFree(device_)); // < 释放设备内存
+    CUDA_CHECK(cudaFree(device_)); // < 释放设备内存
   device_ = nullptr;
   size_ = 0;
 }
@@ -112,19 +112,19 @@ DiscreteBuffer &DiscreteBuffer::operator=(DiscreteBuffer &&other) noexcept {
 void DiscreteBuffer::allocate(size_t size) {
   if (size > size_) {
     free();
-    CHECK(cudaMallocHost(&host_, size)); // < 分配主机内存
-    CHECK(cudaMalloc(&device_, size));   // < 分配设备内存
+    CUDA_CHECK(cudaMallocHost(&host_, size)); // < 分配主机内存
+    CUDA_CHECK(cudaMalloc(&device_, size));   // < 分配设备内存
     size_ = size;
   }
 }
 
 void DiscreteBuffer::free() {
   if (host_) {
-    CHECK(cudaFreeHost(host_)); // < 释放主机内存
+    CUDA_CHECK(cudaFreeHost(host_)); // < 释放主机内存
     host_ = nullptr;            // < 将指针置为 nullptr，避免双重释放
   }
   if (device_) {
-    CHECK(cudaFree(device_)); // < 释放设备内存
+    CUDA_CHECK(cudaFree(device_)); // < 释放设备内存
     device_ = nullptr;        // < 将指针置为 nullptr，避免双重释放
   }
   size_ = 0;
@@ -138,20 +138,20 @@ size_t DiscreteBuffer::size() const { return size_; }
 
 void DiscreteBuffer::hostToDevice(cudaStream_t stream) {
   if (stream) {
-    CHECK(cudaMemcpyAsync(device_, host_, size_, cudaMemcpyHostToDevice,
+    CUDA_CHECK(cudaMemcpyAsync(device_, host_, size_, cudaMemcpyHostToDevice,
                           stream)); // < 异步拷贝主机到设备
   } else {
-    CHECK(cudaMemcpy(device_, host_, size_,
+    CUDA_CHECK(cudaMemcpy(device_, host_, size_,
                      cudaMemcpyHostToDevice)); // < 同步拷贝主机到设备
   }
 }
 
 void DiscreteBuffer::deviceToHost(cudaStream_t stream) {
   if (stream) {
-    CHECK(cudaMemcpyAsync(host_, device_, size_, cudaMemcpyDeviceToHost,
+    CUDA_CHECK(cudaMemcpyAsync(host_, device_, size_, cudaMemcpyDeviceToHost,
                           stream)); // < 异步拷贝设备到主机
   } else {
-    CHECK(cudaMemcpy(host_, device_, size_,
+    CUDA_CHECK(cudaMemcpy(host_, device_, size_,
                      cudaMemcpyDeviceToHost)); // < 同步拷贝设备到主机
   }
 }
@@ -179,7 +179,7 @@ UnifiedBuffer &UnifiedBuffer::operator=(UnifiedBuffer &&other) noexcept {
 void UnifiedBuffer::allocate(size_t size) {
   if (size > size_) {
     free();
-    CHECK(cudaMallocManaged(&host_, size)); // < 分配统一内存
+    CUDA_CHECK(cudaMallocManaged(&host_, size)); // < 分配统一内存
     device_ = host_;                        // < 设备内存和主机内存共享同一指针
     size_ = size;
   }
@@ -187,7 +187,7 @@ void UnifiedBuffer::allocate(size_t size) {
 
 void UnifiedBuffer::free() {
   if (host_)
-    CHECK(cudaFree(host_)); // < 释放统一内存
+    CUDA_CHECK(cudaFree(host_)); // < 释放统一内存
   host_ = nullptr;
   device_ = nullptr;
   size_ = 0;
@@ -226,15 +226,15 @@ MappedBuffer &MappedBuffer::operator=(MappedBuffer &&other) noexcept {
 void MappedBuffer::allocate(size_t size) {
   if (size > size_) {
     free();
-    CHECK(cudaHostAlloc(&host_, size, cudaHostAllocMapped)); // < 分配映射内存
-    CHECK(cudaHostGetDevicePointer(&device_, host_, 0));     // < 获取设备指针
+    CUDA_CHECK(cudaHostAlloc(&host_, size, cudaHostAllocMapped)); // < 分配映射内存
+    CUDA_CHECK(cudaHostGetDevicePointer(&device_, host_, 0));     // < 获取设备指针
     size_ = size;
   }
 }
 
 void MappedBuffer::free() {
   if (host_)
-    CHECK(cudaFreeHost(host_)); // < 释放映射内存
+    CUDA_CHECK(cudaFreeHost(host_)); // < 释放映射内存
   host_ = nullptr;
   device_ = nullptr;
   size_ = 0;

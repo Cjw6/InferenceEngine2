@@ -6,9 +6,9 @@ TensorDataType
 OnnxTensorDataTypeToTensorDataType(ONNXTensorElementDataType onnx_data_type) {
   switch (onnx_data_type) {
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
-    return kFloat32;
+    return kFP32;
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
-    return kFloat16;
+    return kFP16;
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8:
     return kInt8;
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8:

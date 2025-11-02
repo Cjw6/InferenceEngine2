@@ -21,8 +21,7 @@ public:
   NON_COPY_CONSTRUCT(OnnxRuntimeEngine);
   NON_MOVE_CONSTRUCT(OnnxRuntimeEngine);
 
-  int Init(const std::string &model_path, const std::string &log_id = "",
-           const ParamMap &params = {});
+  int Init(const InferenceParams &params = {});
   void Deinit();
 
   int Run();

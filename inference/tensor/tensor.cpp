@@ -8,9 +8,9 @@ namespace inference {
 
 int64_t GetTensorSize(TensorDataType data_type, int32_t element_size) {
   switch (data_type) {
-  case kFloat32:
+  case kFP32:
     return element_size * sizeof(float);
-  case kFloat16:
+  case kFP16:
     return element_size * sizeof(float) / 2;
   case kInt8:
     return element_size * sizeof(int8_t);
@@ -27,7 +27,7 @@ int64_t ShapeElemNum(const std::vector<int64_t> &v) {
 
 namespace {
 
-BufferType SelectBufferTypeByDevice(TensorDeviceType device_type) {
+BufferType SelectBufferTypeByDevice(DeviceType device_type) {
   switch (device_type) {
   case kCPU:
     return BufferType::Host;
@@ -40,13 +40,13 @@ BufferType SelectBufferTypeByDevice(TensorDeviceType device_type) {
 
 } // namespace
 
-TensorBufferUPtr CreateTensorBuffer(TensorDataType data_type,
+TensorBufferUPtr CreateTensorHostBuffer(TensorDataType data_type,
                                     int64_t element_size,
-                                    TensorDeviceType device_type) {
+                                    DeviceType device_type) {
   int64_t size = GetTensorSize(data_type, element_size);
   LOG_INFO("Create tensor buffer with size: {}", size);
   auto *buffer =
-      BufferFactory::createBuffer(SelectBufferTypeByDevice(device_type));
+      BufferFactory::createBuffer(BufferType::Host);
   buffer->allocate(size);
   return TensorBufferUPtr(buffer);
 }
