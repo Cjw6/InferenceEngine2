@@ -37,6 +37,12 @@ std::ostream &operator<<(std::ostream &s, const TensorDataType &data_type) {
   }
 }
 
+std::ostream &operator<<(std::ostream &s, const TensorDesc &tensor_desc) {
+  return s << "TensorDesc {" << "data_type:" << tensor_desc.data_type
+           << ", shape:" << cpputils::VectorToString(tensor_desc.shape)
+           << ", element_size:" << tensor_desc.element_size << "}";
+}
+
 std::ostream &operator<<(std::ostream &s,
                          const TensorDataPointer &tensor_pointer) {
   return s << "TensorDataPointer {" << "p:" << tensor_pointer.p << ", "
@@ -46,7 +52,7 @@ std::ostream &operator<<(std::ostream &s,
            << ", device_type:" << tensor_pointer.device_type << "}";
 }
 
-int64_t GetTensorSize(TensorDataType data_type, int32_t element_size) {
+size_t GetTensorMemSize(TensorDataType data_type, size_t element_size) {
   switch (data_type) {
   case kFP32:
     return element_size * sizeof(float);
@@ -61,32 +67,60 @@ int64_t GetTensorSize(TensorDataType data_type, int32_t element_size) {
   }
 }
 
-int64_t ShapeElemNum(const std::vector<int64_t> &v) {
-  return std::accumulate(v.begin(), v.end(), 1, std::multiplies<int64_t>());
-};
-
-namespace {
-
-BufferType SelectBufferTypeByDevice(DeviceType device_type) {
-  switch (device_type) {
-  case kCPU:
-    return BufferType::Host;
-  case kGPU:
-    return BufferType::Device;
-  default:
-    throw std::runtime_error("Invalid device type");
+int64_t GetElemCntFromShape(const std::vector<int64_t> &v, int64_t batch_size) {
+  int64_t cnt = 1;
+  for (auto dim : v) {
+    if (dim > 0) {
+      cnt *= dim;
+    } else {
+      cnt *= batch_size;
+    }
   }
+  return cnt;
 }
 
-} // namespace
+int64_t GetSingleBatchEleCntFromShape(const std::vector<int64_t> &v) {
+  for (int i = 1; i < v.size(); i++) {
+    if (v[i] < 0) {
+      return v[i] * -1;
+    }
+  }
+  return -1;
+}
 
-TensorBufferUPtr CreateTensorHostBuffer(TensorDataType data_type,
-                                        int64_t element_size,
-                                        DeviceType device_type) {
-  int64_t size = GetTensorSize(data_type, element_size);
-  LOG_INFO("Create tensor buffer with size: {}", size);
+// namespace {
+
+// BufferType SelectBufferTypeByDevice(DeviceType device_type) {
+//   switch (device_type) {
+//   case kCPU:
+//     return BufferType::Host;
+//   case kGPU:
+//     return BufferType::Device;
+//   default:
+//     throw std::runtime_error("Invalid device type");
+//   }
+// }
+
+// } // namespace
+
+int64_t GetMemSizeFromShape(const std::vector<int64_t> &v,
+                            TensorDataType data_type, int batch_size) {
+  int64_t elem_cnt = GetElemCntFromShape(v, batch_size);
+  return GetTensorMemSize(data_type, elem_cnt);
+}
+
+int64_t GetSingleBatchMemSizeFromShape(const std::vector<int64_t> &v,
+                                       TensorDataType data_type) {
+  int64_t elem_cnt = GetSingleBatchEleCntFromShape(v);
+  return GetTensorMemSize(data_type, elem_cnt);
+}
+
+TensorBufferUPtr CreateTensorBufferCPU(TensorDataType data_type,
+                                       size_t mem_size) {
+  // LOG_DEBUG("CreateTensorBufferCPU, data_type: {}, mem_size: {}",
+            // cpputils::ToString(data_type), mem_size);
   auto *buffer = BufferFactory::createBuffer(BufferType::Host);
-  buffer->allocate(size);
+  buffer->allocate(mem_size);
   return TensorBufferUPtr(buffer);
 }
 

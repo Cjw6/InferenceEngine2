@@ -9,6 +9,13 @@
     }                                                                          \
   } while (0);
 
+#define CHECK_MSG(x, msg)                                                      \
+  do {                                                                         \
+    if (!(x)) {                                                                \
+      LOG_CRITICAL("CHECK {} error!!! | {}", #x, msg);                         \
+    }                                                                          \
+  } while (0);
+
 #define CUDA_CHECK(x)                                                          \
   do {                                                                         \
     if (x != cudaSuccess) {                                                    \

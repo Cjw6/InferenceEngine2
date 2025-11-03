@@ -61,3 +61,4 @@ endif()
 
 add_subdirectory(inference)
 add_subdirectory(modelzoo)
+add_subdirectory(test)

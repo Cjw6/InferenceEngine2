@@ -9,8 +9,9 @@ DEFINE_string(img_path, "modelzoo/mnist/0001-0.jpg", "Path to the image file.");
 DEFINE_string(model_path, "modelzoo/mnist/mnist.onnx",
               "Path to the ONNX model file.");
 DEFINE_string(device, "cpu", "Device to run the inference on.");
-DEFINE_int32(device_id, 0, "Number of threads to use.");
+DEFINE_int32(device_id, 0, "gpu device id to use.");
 DEFINE_string(label_path, "modelzoo/mnist/labels.txt", "");
+DEFINE_int32(max_batch_size, 5, "max batch size for inference.");
 
 inference::InferenceParams GetParams() {
   inference::InferenceParams params;
@@ -21,6 +22,7 @@ inference::InferenceParams GetParams() {
   }
   params.device_id = FLAGS_device_id;
   params.model_path = FLAGS_model_path;
+  params.max_batch_size = FLAGS_max_batch_size;
   return params;
 }
 

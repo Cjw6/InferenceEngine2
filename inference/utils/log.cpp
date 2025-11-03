@@ -12,15 +12,16 @@ void LogInit() {
   console_sink->set_level(spdlog::level::trace);
 
   // 设置日志旋转
-  auto max_size = 1048576 * 5;
+  auto max_size = 1024 * 1024 * 5;
   auto max_files = 3;
   auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-      "logs/athena.log", max_size, max_files);
+      "logs/inference_engine.log", max_size, max_files);
   file_sink->set_level(spdlog::level::trace);
 
-  spdlog::sinks_init_list sinks = {console_sink, file_sink};
+  std::vector<spdlog::sink_ptr> sinks = {console_sink, file_sink};
 
-  auto logger = std::make_shared<spdlog::logger>("", sinks);
+  auto logger =
+      std::make_shared<spdlog::logger>("", sinks.begin(), sinks.end());
   logger->set_level(spdlog::level::trace);
   logger->flush_on(spdlog::level::trace);
 

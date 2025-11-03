@@ -24,7 +24,14 @@ public:
   int Init(const InferenceParams &params = {});
   void Deinit();
 
-  int Run();
+  /*batch_size 为 -1 时，
+  如果是静态张量模型，默认使用固定shape推理
+  如果是动态张量模型，默认使用单batch推理
+  batch_size 为其他值时，在动态张量模型使用指定batch_size推理*/
+  int Run(int batch_size = -1);
+
+  std::string DumpModelInfo() const;
+  bool IsDynamicModel() const;
 
   int InputsNums() const;
   const InputNodeNames &GetInputNodeNames() const;

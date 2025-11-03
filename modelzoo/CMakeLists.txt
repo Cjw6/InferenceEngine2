@@ -14,6 +14,6 @@ function(add_compie_exe dir_name inc_dirs dep_libs)
     message(STATUS "add exe : ${exe_name}")
 endfunction()
 
-
 # 这里使用分号分隔库名表示数组
 add_compie_exe(mnist "" "common;gflags")
+add_compie_exe(mnist_dynamic "" "common;gflags")
