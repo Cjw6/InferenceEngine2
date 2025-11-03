@@ -42,7 +42,8 @@ set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # options
 option(ENABLE_CUDA "use cuda" ON)
-option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" ON)
+# 使用cuda后应该禁用 address sanitize, 否则会发生错误，只对主机代码检查内存错误
+option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
