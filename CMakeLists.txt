@@ -42,6 +42,11 @@ set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # options
 option(ENABLE_CUDA "use cuda" ON)
+option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" ON)
+
+if(ENABLE_ADDRESS_SANITIZER)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+endif()
 
 find_package(spdlog REQUIRED)
 

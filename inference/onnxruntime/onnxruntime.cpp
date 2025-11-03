@@ -28,13 +28,34 @@ std::string ToString(Ort::ConstTensorTypeAndShapeInfo info) {
                      cpputils::VectorToString(shape));
 }
 
-// ParamsTable GetORT_CUDA_ProviderOptions(const InferenceParams &params) {
-//   ParamsTable params_table;
-//   for (auto &[key, value] : params.ext_params) {
-//     params_table[key] = value;
-//   }
-//   return params_table;
-// }
+TensorDesc OrtTypeInfoToTensorDesc(const Ort::TypeInfo &info) {
+  TensorDesc t_desc;
+  auto input_tensor_info = info.GetTensorTypeAndShapeInfo();
+  t_desc.data_type =
+      OnnxTensorDataTypeToTensorDataType(input_tensor_info.GetElementType());
+  t_desc.shape = input_tensor_info.GetShape();
+  t_desc.element_size = input_tensor_info.GetElementCount();
+  return t_desc;
+}
+
+Ort::Value CreateOrtTensorCPU(TensorDataType data_type, void *p_data,
+                              size_t p_data_element_count, const int64_t *shape,
+                              size_t shape_len) {
+  auto memory_info = Ort::MemoryInfo::CreateCpu(
+      OrtAllocatorType::OrtArenaAllocator, OrtMemTypeDefault);
+
+  if (data_type == kFP32) {
+    return Ort::Value::CreateTensor<float>(
+        memory_info, (float *)p_data, p_data_element_count, shape, shape_len);
+  } else if (data_type == kFP16) {
+    return Ort::Value::CreateTensor(memory_info, (Ort::Float16_t *)p_data,
+                                    p_data_element_count, shape, shape_len);
+  } else {
+    throw std::runtime_error(fmt::format(
+        "OnnxRuntimeEngineImpl::CreateTensorBuffer: unknown data type {}",
+        (int)data_type));
+  }
+}
 
 } // namespace
 
@@ -147,12 +168,21 @@ void OnnxRuntimeEngineImpl::CreateTensorBuffer(const char *name, bool input,
     v = Ort::Value::CreateTensor(
         memory_info, (Ort::Float16_t *)tensor_buffers->at(name)->host(),
         t_desc->element_size, t_desc->shape.data(), t_desc->shape.size());
+  } else {
+    throw std::runtime_error(fmt::format(
+        "OnnxRuntimeEngineImpl::CreateTensorBuffer: unknown data type {}",
+        (int)t_desc->data_type));
   }
   dst->push_back(std::move(v));
 }
 
 int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
   try {
+    if (ready_) {
+      LOG_WARN("OnnxRuntimeEngineImpl::Init: engine is ready, deinit first");
+      Deinit();
+    }
+
     env_ = std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "ort");
 
     ParseSetParams(params);
@@ -164,78 +194,47 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
     input_node_names_.reserve(input_nums);
     input_node_names_pointers_.reserve(input_nums);
     input_ort_tensors_.reserve(input_nums);
-    // input_ort_tensor_pointers_.reserve(input_nums);
 
     for (int i = 0; i < input_nums; ++i) {
       auto input_name = session_->GetInputNameAllocated(i, allocator_);
-      input_node_names_.push_back(input_name.get());
-      // input_node_names_pointers_.push_back(input_name.get());
-
       auto input_type_info = session_->GetInputTypeInfo(i);
-      auto input_tensor_info = input_type_info.GetTensorTypeAndShapeInfo();
-
-      auto &tensor_desc = input_tensor_descs_[input_name.get()];
-      tensor_desc.data_type = OnnxTensorDataTypeToTensorDataType(
-          input_tensor_info.GetElementType());
-      tensor_desc.shape = input_tensor_info.GetShape();
-      tensor_desc.element_size = input_tensor_info.GetElementCount();
-
-      // TODO 如果是其他数据类型呢？
+      auto tensor_desc = OrtTypeInfoToTensorDesc(input_type_info);
       auto tensor_buffer = CreateTensorHostBuffer(tensor_desc.data_type,
                                                   tensor_desc.element_size,
                                                   inference_device_type_);
+      auto ort_tensor =
+          CreateOrtTensorCPU(tensor_desc.data_type, tensor_buffer->host(),
+                             tensor_desc.element_size, tensor_desc.shape.data(),
+                             tensor_desc.shape.size());
+
+      input_node_names_.push_back(input_name.get());
+      input_ort_tensors_.push_back(std::move(ort_tensor));
       input_tensor_buffers_[input_name.get()] = std::move(tensor_buffer);
-
-      CreateTensorBuffer(input_name.get(), true, false);
-
-      // auto memory_info = Ort::MemoryInfo::CreateCpu(
-      //     OrtAllocatorType::OrtArenaAllocator, OrtMemTypeDefault);
-      // input_ort_tensors_.push_back(Ort::Value::CreateTensor(
-      //     memory_info, (float
-      //     *)input_tensor_buffers_[input_name.get()]->host(),
-      //     tensor_desc.element_size, tensor_desc.shape.data(),
-      //     tensor_desc.shape.size()));
+      input_tensor_descs_[input_name.get()] = std::move(tensor_desc);
     }
 
     auto output_nums = session_->GetOutputCount();
     output_node_names_.reserve(output_nums);
     output_node_names_pointers_.reserve(output_nums);
     output_ort_tensors_.reserve(output_nums);
-    // output_ort_tensor_pointers_.reserve(output_nums);
+
     for (int i = 0; i < output_nums; ++i) {
       auto output_name = session_->GetOutputNameAllocated(i, allocator_);
-      output_node_names_.push_back(output_name.get());
-      // output_node_names_pointers_.push_back(output_name.get());
-
       auto output_type_info = session_->GetOutputTypeInfo(i);
-      auto output_tensor_info = output_type_info.GetTensorTypeAndShapeInfo();
-
-      auto &tensor_desc = output_tensor_descs_[output_name.get()];
-      tensor_desc.data_type = OnnxTensorDataTypeToTensorDataType(
-          output_tensor_info.GetElementType());
-      tensor_desc.shape = output_tensor_info.GetShape();
-      tensor_desc.element_size = output_tensor_info.GetElementCount();
-
+      auto tensor_desc = OrtTypeInfoToTensorDesc(output_type_info);
       auto tensor_buffer = CreateTensorHostBuffer(tensor_desc.data_type,
                                                   tensor_desc.element_size,
                                                   inference_device_type_);
+      auto ort_tensor =
+          CreateOrtTensorCPU(tensor_desc.data_type, tensor_buffer->host(),
+                             tensor_desc.element_size, tensor_desc.shape.data(),
+                             tensor_desc.shape.size());
+
+      output_node_names_.push_back(output_name.get());
+      output_ort_tensors_.push_back(std::move(ort_tensor));
       output_tensor_buffers_[output_name.get()] = std::move(tensor_buffer);
-
-      // TODO 如果是其他数据类型呢？
-      // auto memory_info = Ort::MemoryInfo::CreateCpu(
-      //     OrtAllocatorType::OrtArenaAllocator, OrtMemTypeDefault);
-      // output_ort_tensors_.push_back(Ort::Value::CreateTensor(
-      //     memory_info,
-      //     (float *)output_tensor_buffers_[output_name.get()]->host(),
-      //     tensor_desc.element_size, tensor_desc.shape.data(),
-      //     tensor_desc.shape.size()));
-
-      CreateTensorBuffer(output_name.get(), false, true);
+      output_tensor_descs_[output_name.get()] = std::move(tensor_desc);
     }
-
-    // for (auto &name : output_node_names_) {
-    //   output_node_names_pointers_.push_back(&name);
-    // }
 
     for (auto &name : input_node_names_) {
       input_node_names_pointers_.push_back(name.data());
@@ -243,13 +242,6 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
     for (auto &name : output_node_names_) {
       output_node_names_pointers_.push_back(name.data());
     }
-
-    // for (auto &ort_tensor : output_ort_tensors_) {
-    //   output_ort_tensor_pointers_.push_back(&ort_tensor);
-    // }
-    // for (auto &ort_tensor : input_ort_tensors_) {
-    //   input_ort_tensor_pointers_.push_back(&ort_tensor);
-    // }
 
     ready_ = true;
     return 0;
@@ -261,6 +253,18 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
 }
 
 void OnnxRuntimeEngineImpl::Deinit() {
+  input_node_names_.clear();
+  input_node_names_pointers_.clear();
+  input_ort_tensors_.clear();
+  input_tensor_buffers_.clear();
+  input_tensor_descs_.clear();
+
+  output_node_names_.clear();
+  output_node_names_pointers_.clear();
+  output_ort_tensors_.clear();
+  output_tensor_buffers_.clear();
+  output_tensor_descs_.clear();
+
   session_.reset();
   env_.reset();
   ready_ = false;
@@ -297,8 +301,9 @@ InputTensorPointers OnnxRuntimeEngineImpl::GetInputTensors() {
   for (auto &[k, v] : input_tensor_descs_) {
     input_tensors.emplace(
         std::piecewise_construct, std::forward_as_tuple(k),
-        std::forward_as_tuple(input_tensor_buffers_[k]->host(), v.element_size,
-                              v.shape, kCPU));
+        std::forward_as_tuple(input_tensor_buffers_[k]->host(),
+                              input_tensor_buffers_[k]->size(), v.element_size,
+                              v.shape, v.data_type, kCPU));
   }
   return input_tensors;
 }
@@ -320,8 +325,9 @@ OutputTensorPointers OnnxRuntimeEngineImpl::GetOutputTensors() {
   for (auto &[k, v] : output_tensor_descs_) {
     output_tensors.emplace(
         std::piecewise_construct, std::forward_as_tuple(k),
-        std::forward_as_tuple(output_tensor_buffers_[k]->host(), v.element_size,
-                              v.shape, kCPU));
+        std::forward_as_tuple(output_tensor_buffers_[k]->host(),
+                              output_tensor_buffers_[k]->size(), v.element_size,
+                              v.shape, v.data_type, kCPU));
   }
   return output_tensors;
 }

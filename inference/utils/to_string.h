@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -24,6 +25,21 @@ template <typename T> std::string VectorToString(std::vector<T> val) {
       stream << ",";
   }
   stream << "]";
+  return stream.str();
+}
+
+template <typename K, typename V> std::string MapToString(std::map<K, V> val) {
+  if (val.empty()) {
+    return "";
+  }
+  std::stringstream stream;
+  stream << "{";
+  for (auto it = val.begin(); it != val.end(); ++it) {
+    stream << it->first << ":" << it->second;
+    if (std::next(it) != val.end())
+      stream << ",";
+  }
+  stream << "}";
   return stream.str();
 }
 
