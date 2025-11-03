@@ -32,6 +32,7 @@ public:
 
   std::string DumpModelInfo() const;
   bool IsDynamicModel() const;
+  int GetMaxBatchSize() const;
 
   int InputsNums() const;
   const InputNodeNames &GetInputNodeNames() const;

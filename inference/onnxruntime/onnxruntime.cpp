@@ -88,6 +88,7 @@ public:
 
   std::string DumpModelInfo() const;
   bool IsDynamicModel() const { return dynamic_model_; }
+  int GetMaxBatchSize() const { return max_batch_size_; }
 
   int InputsNums() const;
   const InputNodeNames &GetInputNodeNames() const;
@@ -309,11 +310,18 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
              "inference.");
   }
 
+  if (!dynamic_model_) {
+    max_batch_size_ = -1;
+  }
+
   ready_ = true;
   return 0;
 }
 
 void OnnxRuntimeEngineImpl::Deinit() {
+  dynamic_model_ = false;
+  max_batch_size_ = -1;
+
   input_node_names_.clear();
   input_node_names_pointers_.clear();
   input_ort_tensors_.clear();
@@ -557,6 +565,10 @@ std::string OnnxRuntimeEngine::DumpModelInfo() const {
 
 bool OnnxRuntimeEngine::IsDynamicModel() const {
   return impl_->IsDynamicModel();
+}
+
+int OnnxRuntimeEngine::GetMaxBatchSize() const {
+  return impl_->GetMaxBatchSize();
 }
 
 } // namespace inference
