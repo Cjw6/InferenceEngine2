@@ -15,7 +15,7 @@ void RunYoloV8Model(const std::string &model_path,
   ::inference::InferenceParams params;
   params.device_type = device_type;
   params.model_path = model_path;
-  params.log_level = 2;
+  // params.log_level = 2;
 
   ::inference::OnnxRuntimeEngine engine;
   int ret = engine.Init(params);
@@ -23,13 +23,16 @@ void RunYoloV8Model(const std::string &model_path,
 
   cpputils::ElapseTime elapes_time;
 
-  engine.Run();
+  ret = engine.Run();
+  ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
   LOG_INFO("cost time 1 : {}ms", elapes_time.DurationMs());
   elapes_time.Restart();
-  engine.Run();
+  ret = engine.Run();
+  ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
   LOG_INFO("cost time 2 : {}ms", elapes_time.DurationMs());
   elapes_time.Restart();
-  engine.Run();
+  ret = engine.Run();
+  ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
   LOG_INFO("cost time 3 : {}ms", elapes_time.DurationMs());
   elapes_time.Restart();
 }

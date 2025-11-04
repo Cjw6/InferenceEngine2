@@ -5,7 +5,7 @@
 
 namespace img_utils {
 
-template <typename T> int BlobFromImage(cv::Mat &img, T *blob) {
+template <typename T> int BlobFromImage(const cv::Mat &img, T *blob) {
   int channels = img.channels();
   int imgHeight = img.rows;
   int imgWidth = img.cols;
@@ -48,6 +48,12 @@ template <typename T> std::vector<float> Softmax(const T *input, int len) {
   return result;
 }
 
+template <typename T> int GetMaxFromSoftmax(const T *input, int len) {
+  auto result = Softmax(input, len);
+  return std::distance(result.begin(),
+                       std::max_element(result.begin(), result.end()));
+}
+
 inline std::vector<std::string>
 ReadLabelsFromFile(const std::string &label_file) {
   std::ifstream file(label_file);
@@ -66,7 +72,10 @@ ReadLabelsFromFile(const std::string &label_file) {
 std::vector<float> Softmax(const void *input, int len,
                            inference::TensorDataType data_type);
 
-void BlobFromImage(cv::Mat &img, void *blob,
+int GetMaxFromSoftmax(const void *input, int len,
+                      inference::TensorDataType data_type);
+
+void BlobFromImage(const cv::Mat &img, void *blob,
                    inference::TensorDataType data_type);
 
 } // namespace img_utils

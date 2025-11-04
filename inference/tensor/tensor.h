@@ -66,13 +66,18 @@ using OutputNodeNamePointers = std::vector<char *>;
 using OutputTensorDescs = std::map<std::string, TensorDesc>;
 using OutputTensorPointers = std::map<std::string, TensorDataPointer>;
 
-size_t GetTensorMemSize(TensorDataType data_type, size_t element_size);
+size_t GetDataTypeSize(TensorDataType data_type);
+
+size_t GetElemMemSize(TensorDataType data_type, size_t element_size);
+
+// elem_size
 
 // 这里为了处理动态大小的模型， 所以需要根据batch_size来计算元素数量
 int64_t GetElemCntFromShape(const std::vector<int64_t> &v,
                             int64_t batch_size = 1);
-int64_t GetSingleBatchEleCntFromShape(const std::vector<int64_t> &v);
+int64_t GetSingleBatchElemCntFromShape(const std::vector<int64_t> &v);
 
+// mem_size
 int64_t GetMemSizeFromShape(const std::vector<int64_t> &v,
                             TensorDataType data_type, int batch_size = 1);
 int64_t GetSingleBatchMemSizeFromShape(const std::vector<int64_t> &v,

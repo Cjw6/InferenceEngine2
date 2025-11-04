@@ -30,6 +30,7 @@ public:
   batch_size 为其他值时，在动态张量模型使用指定batch_size推理*/
   int Run(int batch_size = -1);
 
+  bool IsReady() const;
   std::string DumpModelInfo() const;
   bool IsDynamicModel() const;
   int GetMaxBatchSize() const;

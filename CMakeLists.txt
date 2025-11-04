@@ -50,6 +50,7 @@ if(ENABLE_ADDRESS_SANITIZER)
 endif()
 
 find_package(spdlog REQUIRED)
+find_package(cpptrace REQUIRED)
 
 if(ENABLE_CUDA)
     find_package(CUDA)

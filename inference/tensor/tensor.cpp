@@ -1,9 +1,12 @@
 #include "inference/tensor/tensor.h"
 #include "inference/tensor/buffer.h"
+#include "inference/utils/half.hpp"
 #include "inference/utils/log.h"
 #include "inference/utils/to_string.h"
 
 #include <numeric>
+
+using half_float::half;
 
 namespace inference {
 
@@ -52,19 +55,23 @@ std::ostream &operator<<(std::ostream &s,
            << ", device_type:" << tensor_pointer.device_type << "}";
 }
 
-size_t GetTensorMemSize(TensorDataType data_type, size_t element_size) {
+size_t GetDataTypeSize(TensorDataType data_type) {
   switch (data_type) {
   case kFP32:
-    return element_size * sizeof(float);
+    return sizeof(float);
   case kFP16:
-    return element_size * sizeof(float) / 2;
+    return sizeof(half);
   case kInt8:
-    return element_size * sizeof(int8_t);
+    return sizeof(int8_t);
   case kUint8:
-    return element_size * sizeof(uint8_t);
+    return sizeof(uint8_t);
   default:
     return 0;
   }
+}
+
+size_t GetElemMemSize(TensorDataType data_type, size_t element_size) {
+  return element_size * GetDataTypeSize(data_type);
 }
 
 int64_t GetElemCntFromShape(const std::vector<int64_t> &v, int64_t batch_size) {
@@ -79,13 +86,12 @@ int64_t GetElemCntFromShape(const std::vector<int64_t> &v, int64_t batch_size) {
   return cnt;
 }
 
-int64_t GetSingleBatchEleCntFromShape(const std::vector<int64_t> &v) {
+int64_t GetSingleBatchElemCntFromShape(const std::vector<int64_t> &v) {
+  int64_t sum_size = 1;
   for (int i = 1; i < v.size(); i++) {
-    if (v[i] < 0) {
-      return v[i] * -1;
-    }
+    sum_size *= v[i];
   }
-  return -1;
+  return sum_size;
 }
 
 // namespace {
@@ -106,19 +112,19 @@ int64_t GetSingleBatchEleCntFromShape(const std::vector<int64_t> &v) {
 int64_t GetMemSizeFromShape(const std::vector<int64_t> &v,
                             TensorDataType data_type, int batch_size) {
   int64_t elem_cnt = GetElemCntFromShape(v, batch_size);
-  return GetTensorMemSize(data_type, elem_cnt);
+  return GetElemMemSize(data_type, elem_cnt);
 }
 
 int64_t GetSingleBatchMemSizeFromShape(const std::vector<int64_t> &v,
                                        TensorDataType data_type) {
-  int64_t elem_cnt = GetSingleBatchEleCntFromShape(v);
-  return GetTensorMemSize(data_type, elem_cnt);
+  int64_t elem_cnt = GetSingleBatchElemCntFromShape(v);
+  return GetElemMemSize(data_type, elem_cnt);
 }
 
 TensorBufferUPtr CreateTensorBufferCPU(TensorDataType data_type,
                                        size_t mem_size) {
   // LOG_DEBUG("CreateTensorBufferCPU, data_type: {}, mem_size: {}",
-            // cpputils::ToString(data_type), mem_size);
+  // cpputils::ToString(data_type), mem_size);
   auto *buffer = BufferFactory::createBuffer(BufferType::Host);
   buffer->allocate(mem_size);
   return TensorBufferUPtr(buffer);

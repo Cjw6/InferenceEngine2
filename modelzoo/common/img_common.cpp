@@ -18,7 +18,20 @@ std::vector<float> Softmax(const void *input, int len,
   return {};
 }
 
-void BlobFromImage(cv::Mat &img, void *blob,
+int GetMaxFromSoftmax(const void *input, int len,
+                      inference::TensorDataType data_type) {
+  if (data_type == inference::TensorDataType::kFP32) {
+    const float *input_fp32 = (const float *)input;
+    return GetMaxFromSoftmax(input_fp32, len / sizeof(float));
+  } else if (data_type == inference::TensorDataType::kFP16) {
+    return GetMaxFromSoftmax((const half_float::half *)input,
+                             len / sizeof(half_float::half));
+  } else {
+    throw std::runtime_error("data type not supported");
+  }
+}
+
+void BlobFromImage(const cv::Mat &img, void *blob,
                    inference::TensorDataType data_type) {
   if (data_type == inference::TensorDataType::kFP32) {
     BlobFromImage(img, (float *)blob);

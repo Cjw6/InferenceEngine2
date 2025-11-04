@@ -1,7 +1,7 @@
 # InferenceEngine
 
 ## how to build
-```shell
+```bash
 conda activate my_cpp_env
 python ./tools/build_tool.py  \
 --task all \

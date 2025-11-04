@@ -2,3 +2,4 @@
 build
 .cache
 /logs/
+/test_results.json

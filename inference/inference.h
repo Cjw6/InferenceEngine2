@@ -1,4 +1,5 @@
 #include "inference/tensor/tensor.h"
+#include "inference/utils/exception.h"
 #include <unordered_map>
 
 namespace inference {
@@ -20,10 +21,12 @@ struct InferenceParams {
   // onnxruntime
   int intra_op_num_threads = 1;
   int inter_op_num_threads = 1;
-  int graph_opt_level = 0;
+  int graph_optimize_level = 0;
   int exe_mode = 0;
 
   std::unordered_map<std::string, std::string> ext_params;
 };
+
+InferenceParams GetDefaultOnnxRuntimeEngineParams();
 
 } // namespace inference

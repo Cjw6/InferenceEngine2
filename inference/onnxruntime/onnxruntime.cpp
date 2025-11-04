@@ -86,6 +86,7 @@ public:
   int RunStaticModel();
   int RunDynamicModel(int batch_size);
 
+  bool IsReady() const { return ready_; }
   std::string DumpModelInfo() const;
   bool IsDynamicModel() const { return dynamic_model_; }
   int GetMaxBatchSize() const { return max_batch_size_; }
@@ -138,7 +139,7 @@ void OnnxRuntimeEngineImpl::ParseSetParams(const InferenceParams &params) {
   sess_options_.SetIntraOpNumThreads(params.intra_op_num_threads);
   sess_options_.SetInterOpNumThreads(params.inter_op_num_threads);
   sess_options_.SetGraphOptimizationLevel(
-      (GraphOptimizationLevel)params.graph_opt_level);
+      (GraphOptimizationLevel)params.graph_optimize_level);
   sess_options_.SetExecutionMode((ExecutionMode)params.exe_mode);
 
   if (inference_device_type_ == kCPU) {
@@ -235,10 +236,10 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
       dynamic_model_ = true;
       int64_t max_element_cnt =
           GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
-      mem_alloc_size = GetTensorMemSize(tensor_desc.data_type, max_element_cnt);
+      mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
     } else {
       mem_alloc_size =
-          GetTensorMemSize(tensor_desc.data_type, tensor_desc.element_size);
+          GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
     }
     auto tensor_buffer =
         CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
@@ -276,10 +277,10 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
       dynamic_model_ = true;
       int64_t max_element_cnt =
           GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
-      mem_alloc_size = GetTensorMemSize(tensor_desc.data_type, max_element_cnt);
+      mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
     } else {
       mem_alloc_size =
-          GetTensorMemSize(tensor_desc.data_type, tensor_desc.element_size);
+          GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
     }
     auto tensor_buffer =
         CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
@@ -369,7 +370,7 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
       if (tensor_desc.IsDynamic()) {
         shape[0] = batch_size;
       }
-      LOG_DEBUG("shape:{}", cpputils::VectorToString(shape));
+      // LOG_DEBUG("shape:{}", cpputils::VectorToString(shape));
       auto ort_tensor = CreateOrtTensorCPU(
           tensor_desc.data_type, tensor_buffer->host(),
           tensor_desc.element_size, shape.data(), shape.size());
@@ -457,12 +458,12 @@ InputTensorPointers OnnxRuntimeEngineImpl::GetInputTensors() {
                                      t_desc.element_size, t_desc.shape,
                                      t_desc.data_type, kCPU);
 
-    auto single_batch_elem_cnt = GetSingleBatchEleCntFromShape(t_desc.shape);
+    // auto single_batch_elem_cnt =
+    // GetSingleBatchElemCntFromShape(t_desc.shape);
     if (t_desc.IsDynamic()) {
-      int64_t single_batch_elem_cnt =
-          GetSingleBatchEleCntFromShape(t_desc.shape);
+      int64_t single_batch_elem_cnt = GetElemCntFromShape(t_desc.shape, 1);
       int64_t single_batch_mem_size =
-          GetTensorMemSize(t_desc.data_type, single_batch_elem_cnt);
+          GetElemMemSize(t_desc.data_type, single_batch_elem_cnt);
       tensor_pointer.shape[0] = 1;
       tensor_pointer.elem_cnt = single_batch_elem_cnt;
       tensor_pointer.mem_size = single_batch_mem_size;
@@ -496,12 +497,12 @@ OutputTensorPointers OnnxRuntimeEngineImpl::GetOutputTensors() {
                                      t_desc.element_size, t_desc.shape,
                                      t_desc.data_type, kCPU);
 
-    auto single_batch_elem_cnt = GetSingleBatchEleCntFromShape(t_desc.shape);
+    // auto single_batch_elem_cnt =
+    // GetSingleBatchElemCntFromShape(t_desc.shape);
     if (t_desc.IsDynamic()) {
-      int64_t single_batch_elem_cnt =
-          GetSingleBatchEleCntFromShape(t_desc.shape);
+      int64_t single_batch_elem_cnt = GetElemCntFromShape(t_desc.shape, 1);
       int64_t single_batch_mem_size =
-          GetTensorMemSize(t_desc.data_type, single_batch_elem_cnt);
+          GetElemMemSize(t_desc.data_type, single_batch_elem_cnt);
       tensor_pointer.shape[0] = 1;
       tensor_pointer.elem_cnt = single_batch_elem_cnt;
       tensor_pointer.mem_size = single_batch_mem_size;
@@ -558,6 +559,8 @@ OutputTensorPointers OnnxRuntimeEngine::GetOutputTensors() {
 }
 
 int OnnxRuntimeEngine::Run(int batch_size) { return impl_->Run(batch_size); }
+
+bool OnnxRuntimeEngine::IsReady() const { return impl_->IsReady(); }
 
 std::string OnnxRuntimeEngine::DumpModelInfo() const {
   return impl_->DumpModelInfo();
