@@ -87,7 +87,6 @@ def cmake_task_func(args):
     if args.cudnn_dir is not None:
         cmd_args.append("-DCUDNN_DIR={}".format(args.cudnn_dir))
 
-    print("---run cmd: {}".format(cmd_args))
     result = subprocess.run(cmd_args, text=True)
     if result.returncode != 0:
         raise Exception("cmake failed!!!. {}".format(result.returncode))
@@ -98,10 +97,11 @@ def build_task_func(args):
     cmd_args = [
         "ninja",
     ]
-    print(cmd_args)
+    if args.target is not None:
+        cmd_args.append(args.target)
     if args.verbose:
         cmd_args.append("-v")
-    print("----run cmd: {}".format(cmd_args))
+    print("build cmd: {}".format(" ".join(cmd_args)))
     result = subprocess.run(cmd_args, text=True, cwd=build_dir)
     if result.returncode != 0:
         raise Exception("build failed!!!. {}".format(result.returncode))
@@ -113,10 +113,8 @@ def install_task_func(args):
         "ninja",
         "install",
     ]
-    print(cmd_args)
     if args.verbose:
         cmd_args.append("-v")
-    print("----run cmd: {}".format(cmd_args))
     result = subprocess.run(cmd_args, text=True, cwd=build_dir)
     if result.returncode != 0:
         raise Exception("install failed!!!. {}".format(result.returncode))
@@ -131,5 +129,4 @@ def all_task_func(args):
 
 if __name__ == "__main__":
     args = build_argparser()
-    print(args.task)
     task_map()[args.task](args)

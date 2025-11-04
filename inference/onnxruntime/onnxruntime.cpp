@@ -201,122 +201,128 @@ void OnnxRuntimeEngineImpl::CreateTensorBuffer(const char *name, bool input,
 }
 
 int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
-  // try {
-  if (ready_) {
-    LOG_WARN("OnnxRuntimeEngineImpl::Init: engine is ready, deinit first");
+  try {
+    if (ready_) {
+      LOG_WARN("OnnxRuntimeEngineImpl::Init: engine is ready, deinit first");
+      Deinit();
+    }
+
+    ParseSetParams(params);
+    OrtLoggingLevel ort_log_level = ORT_LOGGING_LEVEL_WARNING;
+    if (params.log_level >= ORT_LOGGING_LEVEL_VERBOSE ||
+        params.log_level <= ORT_LOGGING_LEVEL_FATAL) {
+      ort_log_level = (OrtLoggingLevel)params.log_level;
+    }
+
+    env_ = std::make_unique<Ort::Env>(ort_log_level, "ort");
+    session_ = std::make_unique<Ort::Session>(*env_, params.model_path.c_str(),
+                                              sess_options_);
+
+    auto input_nums = session_->GetInputCount();
+    input_node_names_.reserve(input_nums);
+    input_node_names_pointers_.reserve(input_nums);
+    input_ort_tensors_.reserve(input_nums);
+
+    for (int i = 0; i < input_nums; ++i) {
+      auto input_name = session_->GetInputNameAllocated(i, allocator_);
+      auto input_type_info = session_->GetInputTypeInfo(i);
+
+      // LOG_DEBUG("input {}: {}: {}", i, input_name.get(),
+      // cpputils::ToString(input_type_info.GetTensorTypeAndShapeInfo()));
+
+      size_t mem_alloc_size = 0;
+      auto tensor_desc = OrtTypeInfoToTensorDesc(input_type_info);
+      if (tensor_desc.IsDynamic()) {
+        dynamic_model_ = true;
+        int64_t max_element_cnt =
+            GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
+        mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
+      } else {
+        mem_alloc_size =
+            GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
+      }
+      auto tensor_buffer =
+          CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
+
+      Ort::Value ort_tensor;
+      if (!tensor_desc.IsDynamic()) {
+        ort_tensor = CreateOrtTensorCPU(
+            tensor_desc.data_type, tensor_buffer->host(),
+            tensor_desc.element_size, tensor_desc.shape.data(),
+            tensor_desc.shape.size());
+      }
+
+      input_node_names_.push_back(input_name.get());
+      input_tensor_descs_[input_name.get()] = std::move(tensor_desc);
+      input_tensor_buffers_[input_name.get()] = std::move(tensor_buffer);
+      input_ort_tensors_.push_back(std::move(ort_tensor));
+    }
+
+    auto output_nums = session_->GetOutputCount();
+    output_node_names_.reserve(output_nums);
+    output_node_names_pointers_.reserve(output_nums);
+    output_ort_tensors_.reserve(output_nums);
+
+    for (int i = 0; i < output_nums; ++i) {
+      auto output_name = session_->GetOutputNameAllocated(i, allocator_);
+      auto output_type_info = session_->GetOutputTypeInfo(i);
+
+      // LOG_DEBUG("output {}: {}: {}", i, output_name.get(),
+      //           cpputils::ToString(output_type_info.GetTensorTypeAndShapeInfo()));
+
+      auto tensor_desc = OrtTypeInfoToTensorDesc(output_type_info);
+
+      size_t mem_alloc_size = 0;
+      if (tensor_desc.IsDynamic()) {
+        dynamic_model_ = true;
+        int64_t max_element_cnt =
+            GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
+        mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
+      } else {
+        mem_alloc_size =
+            GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
+      }
+      auto tensor_buffer =
+          CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
+
+      Ort::Value ort_tensor;
+      if (!tensor_desc.IsDynamic()) {
+        ort_tensor = CreateOrtTensorCPU(
+            tensor_desc.data_type, tensor_buffer->host(),
+            tensor_desc.element_size, tensor_desc.shape.data(),
+            tensor_desc.shape.size());
+      }
+
+      output_node_names_.push_back(output_name.get());
+      output_tensor_descs_[output_name.get()] = std::move(tensor_desc);
+      output_tensor_buffers_[output_name.get()] = std::move(tensor_buffer);
+      output_ort_tensors_.push_back(std::move(ort_tensor));
+    }
+
+    for (auto &name : input_node_names_) {
+      input_node_names_pointers_.push_back(name.data());
+    }
+    for (auto &name : output_node_names_) {
+      output_node_names_pointers_.push_back(name.data());
+    }
+
+    if (inference_device_type_ == kCPU && dynamic_model_) {
+      LOG_WARN(
+          "cpu inference use dynamic!!!!, It is recommended to use GPU for "
+          "inference.");
+    }
+
+    if (!dynamic_model_) {
+      max_batch_size_ = -1;
+    }
+
+    ready_ = true;
+    return 0;
+  } catch (const Ort::Exception &e) {
     Deinit();
+    LOG_ERROR("Ort::Session init failed: {}", e.what());
+    return -1;
   }
-
-  ParseSetParams(params);
-  OrtLoggingLevel ort_log_level = ORT_LOGGING_LEVEL_WARNING;
-  if (params.log_level >= ORT_LOGGING_LEVEL_VERBOSE ||
-      params.log_level <= ORT_LOGGING_LEVEL_FATAL) {
-    ort_log_level = (OrtLoggingLevel)params.log_level;
-  }
-
-  env_ = std::make_unique<Ort::Env>(ort_log_level, "ort");
-  session_ = std::make_unique<Ort::Session>(*env_, params.model_path.c_str(),
-                                            sess_options_);
-
-  auto input_nums = session_->GetInputCount();
-  input_node_names_.reserve(input_nums);
-  input_node_names_pointers_.reserve(input_nums);
-  input_ort_tensors_.reserve(input_nums);
-
-  for (int i = 0; i < input_nums; ++i) {
-    auto input_name = session_->GetInputNameAllocated(i, allocator_);
-    auto input_type_info = session_->GetInputTypeInfo(i);
-
-    // LOG_DEBUG("input {}: {}: {}", i, input_name.get(),
-    // cpputils::ToString(input_type_info.GetTensorTypeAndShapeInfo()));
-
-    size_t mem_alloc_size = 0;
-    auto tensor_desc = OrtTypeInfoToTensorDesc(input_type_info);
-    if (tensor_desc.IsDynamic()) {
-      dynamic_model_ = true;
-      int64_t max_element_cnt =
-          GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
-      mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
-    } else {
-      mem_alloc_size =
-          GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
-    }
-    auto tensor_buffer =
-        CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
-
-    Ort::Value ort_tensor;
-    if (!tensor_desc.IsDynamic()) {
-      ort_tensor =
-          CreateOrtTensorCPU(tensor_desc.data_type, tensor_buffer->host(),
-                             tensor_desc.element_size, tensor_desc.shape.data(),
-                             tensor_desc.shape.size());
-    }
-
-    input_node_names_.push_back(input_name.get());
-    input_tensor_descs_[input_name.get()] = std::move(tensor_desc);
-    input_tensor_buffers_[input_name.get()] = std::move(tensor_buffer);
-    input_ort_tensors_.push_back(std::move(ort_tensor));
-  }
-
-  auto output_nums = session_->GetOutputCount();
-  output_node_names_.reserve(output_nums);
-  output_node_names_pointers_.reserve(output_nums);
-  output_ort_tensors_.reserve(output_nums);
-
-  for (int i = 0; i < output_nums; ++i) {
-    auto output_name = session_->GetOutputNameAllocated(i, allocator_);
-    auto output_type_info = session_->GetOutputTypeInfo(i);
-
-    // LOG_DEBUG("output {}: {}: {}", i, output_name.get(),
-    //           cpputils::ToString(output_type_info.GetTensorTypeAndShapeInfo()));
-
-    auto tensor_desc = OrtTypeInfoToTensorDesc(output_type_info);
-
-    size_t mem_alloc_size = 0;
-    if (tensor_desc.IsDynamic()) {
-      dynamic_model_ = true;
-      int64_t max_element_cnt =
-          GetElemCntFromShape(tensor_desc.shape, max_batch_size_);
-      mem_alloc_size = GetElemMemSize(tensor_desc.data_type, max_element_cnt);
-    } else {
-      mem_alloc_size =
-          GetElemMemSize(tensor_desc.data_type, tensor_desc.element_size);
-    }
-    auto tensor_buffer =
-        CreateTensorBufferCPU(tensor_desc.data_type, mem_alloc_size);
-
-    Ort::Value ort_tensor;
-    if (!tensor_desc.IsDynamic()) {
-      ort_tensor =
-          CreateOrtTensorCPU(tensor_desc.data_type, tensor_buffer->host(),
-                             tensor_desc.element_size, tensor_desc.shape.data(),
-                             tensor_desc.shape.size());
-    }
-
-    output_node_names_.push_back(output_name.get());
-    output_tensor_descs_[output_name.get()] = std::move(tensor_desc);
-    output_tensor_buffers_[output_name.get()] = std::move(tensor_buffer);
-    output_ort_tensors_.push_back(std::move(ort_tensor));
-  }
-
-  for (auto &name : input_node_names_) {
-    input_node_names_pointers_.push_back(name.data());
-  }
-  for (auto &name : output_node_names_) {
-    output_node_names_pointers_.push_back(name.data());
-  }
-
-  if (inference_device_type_ == kCPU && dynamic_model_) {
-    LOG_WARN("cpu inference use dynamic!!!!, It is recommended to use GPU for "
-             "inference.");
-  }
-
-  if (!dynamic_model_) {
-    max_batch_size_ = -1;
-  }
-
-  ready_ = true;
-  return 0;
 }
 
 void OnnxRuntimeEngineImpl::Deinit() {
@@ -520,7 +526,7 @@ OutputTensorPointers OnnxRuntimeEngineImpl::GetOutputTensors() {
 OnnxRuntimeEngine::OnnxRuntimeEngine() { impl_ = new OnnxRuntimeEngineImpl(); }
 
 OnnxRuntimeEngine::~OnnxRuntimeEngine() {
-  Deinit();
+  // Deinit();
   delete impl_;
 }
 

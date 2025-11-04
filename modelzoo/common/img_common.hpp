@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fstream>
 #include <opencv2/opencv.hpp>
 

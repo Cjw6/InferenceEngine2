@@ -43,9 +43,9 @@ using cpputils::VectorToString;
 
 namespace {
 
-const std::string fp32_model_path = "modelzoo/mnist_dynamic/mnist_dynamic.onnx";
+const std::string fp32_model_path = "modelzoo/mnist_dynamic/data/mnist_dynamic.onnx";
 // const std::string fp16_model_path = "modelzoo/mnist/mnist_fp16.onnx";
-const std::string test_img_path = "modelzoo/mnist_dynamic/0001-0.jpg";
+const std::string test_img_path = "modelzoo/mnist_dynamic/data/0001-0.jpg";
 // const std::string label_path = "modelzoo/mnist/labels.txt";
 
 void RunMnistModel(const std::string &model_path,
