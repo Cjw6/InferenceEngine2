@@ -31,12 +31,12 @@ int GetMaxFromSoftmax(const void *input, int len,
   }
 }
 
-void BlobFromImage(const cv::Mat &img, void *blob,
+void BlobNormalizeFromImage(const cv::Mat &img, void *blob,
                    inference::TensorDataType data_type) {
   if (data_type == inference::TensorDataType::kFP32) {
-    BlobFromImage(img, (float *)blob);
+    BlobNormalizeFromImage(img, (float *)blob);
   } else if (data_type == inference::TensorDataType::kFP16) {
-    BlobFromImage(img, (half_float::half *)blob);
+    BlobNormalizeFromImage(img, (half_float::half *)blob);
   } else {
     throw std::runtime_error("data type not supported");
   }

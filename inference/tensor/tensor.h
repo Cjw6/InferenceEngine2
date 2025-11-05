@@ -13,12 +13,7 @@ enum DeviceType { kCPU = 0, kGPU = 1, kNPU = 2 };
 
 std::ostream &operator<<(std::ostream &s, const DeviceType &device_type);
 
-enum TensorDataType {
-  kFP32 = 0,
-  kFP16 = 1,
-  kInt8 = 2,
-  kUint8 = 3,
-};
+enum TensorDataType { kFP32 = 0, kFP16, kInt8, kUint8, kInt64 };
 
 std::ostream &operator<<(std::ostream &s, const TensorDataType &data_type);
 

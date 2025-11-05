@@ -1,4 +1,5 @@
-#include "onnxruntime_convert.h"
+#include "inference/onnxruntime/onnxruntime_convert.h"
+#include "inference/utils/to_string.h"
 
 namespace inference {
 
@@ -13,8 +14,11 @@ OnnxTensorDataTypeToTensorDataType(ONNXTensorElementDataType onnx_data_type) {
     return kInt8;
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8:
     return kUint8;
+  case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:
+    return kInt64;
   default:
-    throw std::runtime_error("Unsupported ONNX tensor element data type");
+    throw std::runtime_error("Unsupported ONNX tensor element data type" +
+                             cpputils::ToString(onnx_data_type));
   }
 }
 

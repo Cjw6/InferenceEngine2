@@ -1,16 +1,27 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 namespace cpputils {
 
 template <typename K, typename V>
-V *MapGetValue(const std::map<K, V> &map, const K &key) {
-  auto it = map.find(key);
-  if (it == map.end()) {
+const V *MapGet(const std::map<K, V> &src_map, const K &key) {
+  auto iter = src_map.find(key);
+  if (iter == src_map.end()) {
     return nullptr;
   }
-  return &it->second;
+  return &(iter->second);
+}
+
+template <typename V>
+const V *MapGet(const std::map<std::string, V> &src_map,
+                const std::string &key) {
+  auto iter = src_map.find(key);
+  if (iter == src_map.end()) {
+    return nullptr;
+  }
+  return &(iter->second);
 }
 
 } // namespace cpputils

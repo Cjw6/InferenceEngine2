@@ -92,7 +92,7 @@ void RunMnistModel(const std::string &model_path,
   for (int i = 0; i < batch_size; i++) {
     auto p = input_tensors.at("input").p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
-    img_utils::BlobFromImage(img, p, input_tensors.at("input").data_type);
+    img_utils::BlobNormalizeFromImage(img, p, input_tensors.at("input").data_type);
   }
 
   ret = engine.Run(32);
@@ -149,7 +149,7 @@ public:
       if (!p) {
         THROW_RUNTIME_EXCEPTION("Invalid input ptr: " + ToString(p));
       }
-      img_utils::BlobFromImage(imgs[i], p, i_tensor.data_type);
+      img_utils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
     }
 
     int ret = engine.Run(batch_size);
@@ -270,7 +270,7 @@ void RunMnistBatch(const std::string &model_path,
   for (int i = 0; i < batch_size; i++) {
     auto p = i_tensor.p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
-    img_utils::BlobFromImage(samples[batch_sample_idx[i]].img_data, p,
+    img_utils::BlobNormalizeFromImage(samples[batch_sample_idx[i]].img_data, p,
                              i_tensor.data_type);
   }
 

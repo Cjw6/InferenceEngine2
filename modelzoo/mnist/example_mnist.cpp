@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   auto intput_tensor = engine.GetInputTensors().at("x");
   LOG_INFO("input tensor desc: {}", cpputils::ToString(intput_tensor));
 
-  img_utils::BlobFromImage(img, intput_tensor.p, intput_tensor.data_type);
+  img_utils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
 
   auto output_names = engine.GetOutputNodeNames();
   for (const auto &name : output_names) {

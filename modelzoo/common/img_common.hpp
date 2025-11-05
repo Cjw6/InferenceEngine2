@@ -7,7 +7,7 @@
 
 namespace img_utils {
 
-template <typename T> int BlobFromImage(const cv::Mat &img, T *blob) {
+template <typename T> int BlobNormalizeFromImage(const cv::Mat &img, T *blob) {
   int channels = img.channels();
   int imgHeight = img.rows;
   int imgWidth = img.cols;
@@ -77,7 +77,7 @@ std::vector<float> Softmax(const void *input, int len,
 int GetMaxFromSoftmax(const void *input, int len,
                       inference::TensorDataType data_type);
 
-void BlobFromImage(const cv::Mat &img, void *blob,
-                   inference::TensorDataType data_type);
+void BlobNormalizeFromImage(const cv::Mat &img, void *blob,
+                            inference::TensorDataType data_type);
 
 } // namespace img_utils

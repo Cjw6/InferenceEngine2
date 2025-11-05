@@ -59,7 +59,7 @@ public:
       }
 
       auto p = i_tensor.p_arr[i];
-      img_utils::BlobFromImage(imgs[i], p, i_tensor.data_type);
+      img_utils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
     }
 
     int ret = engine.Run(batch_size);

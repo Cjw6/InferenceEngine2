@@ -35,6 +35,8 @@ std::ostream &operator<<(std::ostream &s, const TensorDataType &data_type) {
     return s << "Int8";
   case kUint8:
     return s << "Uint8";
+  case kInt64:
+    return s << "Int64";
   default:
     return s << "Unknown";
   }
@@ -65,6 +67,8 @@ size_t GetDataTypeSize(TensorDataType data_type) {
     return sizeof(int8_t);
   case kUint8:
     return sizeof(uint8_t);
+  case kInt64:
+    return sizeof(int64_t);
   default:
     return 0;
   }

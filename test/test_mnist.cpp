@@ -25,7 +25,7 @@ void RunMnistModel(const std::string &model_path,
   ASSERT_TRUE(ret == 0) << "Failed to init engine: " << ret;
 
   auto intput_tensor = engine.GetInputTensors().at("x");
-  img_utils::BlobFromImage(img, intput_tensor.p, intput_tensor.data_type);
+  img_utils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
 
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;

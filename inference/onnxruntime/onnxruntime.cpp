@@ -2,6 +2,7 @@
 
 #include "inference/onnxruntime/onnxruntime_convert.h"
 #include "inference/tensor/buffer.h"
+#include "inference/utils/exception.h"
 #include "inference/utils/log.h"
 #include "inference/utils/to_string.h"
 
@@ -65,10 +66,15 @@ Ort::Value CreateOrtTensorCPU(TensorDataType data_type, void *p_data,
   } else if (data_type == kUint8) {
     return Ort::Value::CreateTensor<uint8_t>(
         memory_info, (uint8_t *)p_data, p_data_element_count, shape, shape_len);
+  } else if (data_type == kInt8) {
+    return Ort::Value::CreateTensor<int8_t>(
+        memory_info, (int8_t *)p_data, p_data_element_count, shape, shape_len);
+  } else if (data_type == kInt64) {
+    return Ort::Value::CreateTensor<int64_t>(
+        memory_info, (int64_t *)p_data, p_data_element_count, shape, shape_len);
   } else {
-    throw std::runtime_error(fmt::format(
-        "OnnxRuntimeEngineImpl::CreateTensorBuffer: unknown data type {}",
-        (int)data_type));
+    THROW_RUNTIME_EXCEPTION(
+        fmt::format("unsupported data type {}", (int)data_type));
   }
 }
 
@@ -176,7 +182,7 @@ void OnnxRuntimeEngineImpl::CreateTensorBuffer(const char *name, bool input,
     desc = &output_tensor_descs_;
     tensor_buffers = &output_tensor_buffers_;
   } else {
-    throw std::runtime_error(fmt::format(
+    THROW_RUNTIME_EXCEPTION(fmt::format(
         "OnnxRuntimeEngineImpl::CreateTensorBuffer: unknown input/output {}",
         name));
   }

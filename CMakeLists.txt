@@ -44,6 +44,17 @@ set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 option(ENABLE_CUDA "use cuda" ON)
 # 使用cuda后应该禁用 address sanitize, 否则会发生错误，只对主机代码检查内存错误
 option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
+option(ENABLE_STACKTRACE_EXCEPTION "use stacktrace exception" ON)
+option(ENABLE_ASSERTS "use asserts" ON)
+
+if(ENABLE_STACKTRACE_EXCEPTION)
+    add_definitions("-DENABLE_CPPTRACE_EXCEPTION_STACKTRACE")
+    message(STATUS "ENABLE_CPPTRACE_EXCEPTION_STACKTRACE: ${ENABLE_CPPTRACE_EXCEPTION_STACKTRACE}")
+endif()
+if(ENABLE_ASSERTS)
+    add_definitions("-DENABLE_ASSERTS")
+    message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
+endif()
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
