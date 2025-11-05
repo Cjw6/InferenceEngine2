@@ -20,15 +20,15 @@ auto files = GetAllFilesWithExt("/path/to/dir", ".txt");
 */
 inline std::vector<fs::path> GetAllFilesWithExt(const char *path,
                                                 std::string ext) {
-  std::vector<fs::path> files;
-  for (const auto &entry : fs::directory_iterator(path)) {
-    if (entry.is_regular_file()) {
-      if (entry.path().extension() == ext) {
-        files.push_back(entry.path());
-      }
+    std::vector<fs::path> files;
+    for (const auto &entry : fs::directory_iterator(path)) {
+        if (entry.is_regular_file()) {
+            if (entry.path().extension() == ext) {
+                files.push_back(entry.path());
+            }
+        }
     }
-  }
-  return files;
+    return files;
 }
 
-} // namespace cpputils
+}  // namespace cpputils

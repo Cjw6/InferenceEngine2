@@ -32,7 +32,7 @@ int GetMaxFromSoftmax(const void *input, int len,
 }
 
 void BlobNormalizeFromImage(const cv::Mat &img, void *blob,
-                   inference::TensorDataType data_type) {
+                            inference::TensorDataType data_type) {
   if (data_type == inference::TensorDataType::kFP32) {
     BlobNormalizeFromImage(img, (float *)blob);
   } else if (data_type == inference::TensorDataType::kFP16) {

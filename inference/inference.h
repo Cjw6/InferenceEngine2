@@ -1,3 +1,5 @@
+#pragma once
+
 #include "inference/tensor/tensor.h"
 #include "inference/utils/exception.h"
 #include <unordered_map>

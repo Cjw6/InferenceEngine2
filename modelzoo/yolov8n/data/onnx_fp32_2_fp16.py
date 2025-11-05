@@ -4,8 +4,8 @@ from onnxconverter_common import (
 import onnx
 
 # Load your FP32 ONNX model
-fp32_model_path = "modelzoo/yolov8n/yolov8n.onnx"
-fp16_model_path = "modelzoo/yolov8n/yolov8n_fp16.onnx"
+fp32_model_path = "yolov8n.onnx"
+fp16_model_path = "yolov8n_fp16.onnx"
 
 
 model = onnx.load(fp32_model_path)

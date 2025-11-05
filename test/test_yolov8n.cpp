@@ -6,8 +6,8 @@
 
 namespace {
 
-const std::string fp32_model_path = "modelzoo/yolov8n/yolov8n.onnx";
-const std::string fp16_model_path = "modelzoo/yolov8n/yolov8n_fp16.onnx";
+const std::string fp32_model_path = "modelzoo/yolov8n/data/yolov8n.onnx";
+const std::string fp16_model_path = "modelzoo/yolov8n/data/yolov8n_fp16.onnx";
 
 void RunYoloV8Model(const std::string &model_path,
                     inference::DeviceType device_type) {

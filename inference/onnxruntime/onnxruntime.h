@@ -24,6 +24,8 @@ public:
   int Init(const InferenceParams &params = {});
   void Deinit();
 
+  int Warmup();
+
   /*batch_size 为 -1 时，
   如果是静态张量模型，默认使用固定shape推理
   如果是动态张量模型，默认使用单batch推理

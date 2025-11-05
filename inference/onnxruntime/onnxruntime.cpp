@@ -88,6 +88,8 @@ public:
   int Init(const InferenceParams &params);
   void Deinit();
 
+  int Warmup();
+
   int Run(int batch_size);
   int RunStaticModel();
   int RunDynamicModel(int batch_size);
@@ -419,6 +421,14 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
   }
 }
 
+int OnnxRuntimeEngineImpl::Warmup() {
+  if (!dynamic_model_) {
+    return RunStaticModel();
+  } else {
+    return RunDynamicModel(max_batch_size_);
+  }
+}
+
 int OnnxRuntimeEngineImpl::Run(int batch_size) {
   if (!dynamic_model_) {
     return RunStaticModel();
@@ -531,16 +541,15 @@ OutputTensorPointers OnnxRuntimeEngineImpl::GetOutputTensors() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OnnxRuntimeEngine::OnnxRuntimeEngine() { impl_ = new OnnxRuntimeEngineImpl(); }
 
-OnnxRuntimeEngine::~OnnxRuntimeEngine() {
-  // Deinit();
-  delete impl_;
-}
+OnnxRuntimeEngine::~OnnxRuntimeEngine() { delete impl_; }
 
 int OnnxRuntimeEngine::Init(const InferenceParams &params) {
   return impl_->Init(params);
 }
 
 void OnnxRuntimeEngine::Deinit() { impl_->Deinit(); }
+
+int OnnxRuntimeEngine::Warmup() { return impl_->Warmup(); }
 
 int OnnxRuntimeEngine::InputsNums() const { return impl_->InputsNums(); }
 

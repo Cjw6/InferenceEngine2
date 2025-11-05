@@ -1,0 +1,85 @@
+#include <gflags/gflags.h>
+
+#include "inference/inference.h"
+#include "inference/utils/assert.h"
+#include "inference/utils/exception.h"
+#include "inference/utils/to_string.h"
+#include "modelzoo/common/filesystem_common.hpp"
+#include "modelzoo/common/img_common.hpp"
+#include "modelzoo/yolov8n/yolov8n.hpp"
+
+DEFINE_string(img_path, "modelzoo/yolov8n/data/img", "image path");
+DEFINE_string(model_path, "modelzoo/yolov8n/data/yolov8n.onnx", "model path");
+DEFINE_string(label_path, "modelzoo/yolov8n/data/labels.txt", "label path");
+
+std::vector<std::string> GetImgDataPaths() {
+  std::vector<std::string> img_paths;
+  if (fs::is_regular_file(FLAGS_img_path)) {
+    img_paths.push_back(FLAGS_img_path);
+  }
+  if (fs::is_directory(FLAGS_img_path)) {
+    auto files = cpputils::GetAllFilesWithExt(FLAGS_img_path.c_str(), ".jpg");
+    for (auto &file : files) {
+      img_paths.push_back(file);
+    }
+  }
+  return img_paths;
+}
+
+int main(int argc, char **argv) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  LOG_INFO("img_path: {}", FLAGS_img_path);
+  LOG_INFO("model_path: {}", FLAGS_model_path);
+  LOG_INFO("label_path: {}", FLAGS_label_path);
+
+  auto labels = img_utils::ReadLabelsFromFile(FLAGS_label_path);
+
+  auto img_paths = GetImgDataPaths();
+  std::vector<cv::Mat> img_datas;
+  for (auto &f : img_paths) {
+    cv::Mat img = cv::imread(f);
+    if (img.empty() || img.type() != CV_8UC3) {
+      LOG_ERROR("invalid image: {}", f);
+      img_datas.emplace_back();
+    } else {
+      img_datas.push_back(img);
+    }
+  }
+
+  auto infer_params = inference::GetDefaultOnnxRuntimeEngineParams();
+  infer_params.device_type = inference::kGPU;
+  infer_params.model_path = FLAGS_model_path;
+
+  modelzoo::YoloV8N yolov8n;
+  int ret = yolov8n.Init(infer_params);
+  if (ret != 0) {
+    LOG_ERROR("init yolov8n failed");
+    return 1;
+  }
+
+  ret = yolov8n.Warmup();
+  if (ret != 0) {
+    LOG_ERROR("warmup yolov8n failed");
+    return 1;
+  }
+
+  for (int i = 0; i < img_datas.size(); i++) {
+    auto &img = img_datas[i];
+    auto &img_path = img_paths[i];
+    modelzoo::YoloV8N::Result result;
+    ret = yolov8n.Detect(img, result);
+    if (ret != 0) {
+      LOG_ERROR("detect yolov8n failed, img_path: {}", img_path);
+      continue;
+    }
+    LOG_INFO("detect yolov8n success, result: {}",
+             cpputils::VectorToString(result));
+    detect_utils::VisualDetectBox(img, result, labels);
+    cv::imshow(img_path, img);
+    cv::waitKey(0);
+  }
+
+  CHECK_MSG(img_datas.size() == img_paths.size(),
+            fmt::format("img_datas.size():{} != img_paths.size():{}",
+                        img_datas.size(), img_paths.size()));
+}

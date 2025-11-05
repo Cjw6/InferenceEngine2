@@ -57,9 +57,8 @@ function(add_model dir_name inc_dirs dep_libs exe_dep_libs)
     add_compie_exe("${dir_name}" "${inc_dirs}" "${exe_dep_libs}")
 endfunction()
 
-
-
 # 这里使用分号分隔库名表示数组
 add_model(mnist "" "" "gflags")
-add_model(mnist_dynamic "" "" "gflags")
+add_model(mnist_dynamic "" "" "")
 add_model(mnist_add_process "" "" "")
+add_model(yolov8n "" "" "gflags")
