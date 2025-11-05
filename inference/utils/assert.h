@@ -12,7 +12,7 @@
                    cpputils::StacktraceToString(), #x);                        \
       assert(0);                                                               \
     }                                                                          \
-  } while (0);
+  } while (0)
 
 #define CHECK_MSG(x, msg)                                                      \
   do {                                                                         \
@@ -21,11 +21,11 @@
                    cpputils::StacktraceToString(), #x, msg);                   \
       assert(0);                                                               \
     }                                                                          \
-  } while (0);
+  } while (0)
 
 #else
-#define CHECK(x)
-#define CHECK_MSG(x, msg)
+#define CHECK(x)  (x)
+#define CHECK_MSG(x, msg)  (x)
 #endif
 
 #define CUDA_CHECK(x)                                                          \
@@ -33,4 +33,4 @@
     if (x != cudaSuccess) {                                                    \
       LOG_CRITICAL("CUDA_CHECK {} error!!!", #x);                              \
     }                                                                          \
-  } while (0);
+  } while (0)

@@ -50,6 +50,10 @@ int main(int argc, char **argv) {
   infer_params.device_type = inference::kGPU;
   infer_params.model_path = FLAGS_model_path;
 
+  CHECK_MSG(img_datas.size() == img_paths.size(),
+            fmt::format("img_datas.size():{} != img_paths.size():{}",
+                        img_datas.size(), img_paths.size()));
+
   modelzoo::YoloV8N yolov8n;
   int ret = yolov8n.Init(infer_params);
   if (ret != 0) {
@@ -72,14 +76,5 @@ int main(int argc, char **argv) {
       LOG_ERROR("detect yolov8n failed, img_path: {}", img_path);
       continue;
     }
-    LOG_INFO("detect yolov8n success, result: {}",
-             cpputils::VectorToString(result));
-    detect_utils::VisualDetectBox(img, result, labels);
-    cv::imshow(img_path, img);
-    cv::waitKey(0);
   }
-
-  CHECK_MSG(img_datas.size() == img_paths.size(),
-            fmt::format("img_datas.size():{} != img_paths.size():{}",
-                        img_datas.size(), img_paths.size()));
 }

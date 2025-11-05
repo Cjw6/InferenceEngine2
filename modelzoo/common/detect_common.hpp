@@ -40,8 +40,6 @@ inline void VisualDetectBox(cv::Mat &image, const std::vector<DetectBox> &boxes,
     std::string label = class_names[class_id];
     std::string label_text = label + " " + cv::format("%.3f", confidence);
 
-    LOG_INFO("label_text: {}", label_text);
-
     // 绘制矩形和标签
     int base_line;
     cv::Size label_size = cv::getTextSize(label_text, cv::FONT_HERSHEY_SIMPLEX,

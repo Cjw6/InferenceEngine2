@@ -23,7 +23,7 @@ public:
   int Init(const inference::InferenceParams &params) {
     int ret = engine.Init(params);
     if (engine.IsDynamicModel()) {
-      CHECK_MSG(!engine.IsDynamicModel(), "model must be static")
+      CHECK_MSG(!engine.IsDynamicModel(), "model must be static");
       LOG_ERROR("model must be static");
       Deinit();
       return -1;

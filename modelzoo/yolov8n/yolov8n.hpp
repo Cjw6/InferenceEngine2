@@ -103,10 +103,6 @@ private:
     int class_cnt = signalResultNum - 4;
     int strideNum = o_shape[2]; // 8400
 
-    LOG_INFO("signalResultNum: {}", signalResultNum);
-    LOG_INFO("class_cnt: {}", class_cnt);
-    LOG_INFO("strideNum: {}", strideNum);
-
     std::vector<int> class_ids;
     std::vector<float> confidences;
     std::vector<cv::Rect> boxes;

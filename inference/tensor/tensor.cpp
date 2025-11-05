@@ -127,8 +127,6 @@ int64_t GetSingleBatchMemSizeFromShape(const std::vector<int64_t> &v,
 
 TensorBufferUPtr CreateTensorBufferCPU(TensorDataType data_type,
                                        size_t mem_size) {
-  // LOG_DEBUG("CreateTensorBufferCPU, data_type: {}, mem_size: {}",
-  // cpputils::ToString(data_type), mem_size);
   auto *buffer = BufferFactory::createBuffer(BufferType::Host);
   buffer->allocate(mem_size);
   return TensorBufferUPtr(buffer);

@@ -12,7 +12,7 @@ const std::string fp16_model_path = "modelzoo/yolov8n/data/yolov8n_fp16.onnx";
 void RunYoloV8Model(const std::string &model_path,
                     inference::DeviceType device_type) {
 
-  ::inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   params.device_type = device_type;
   params.model_path = model_path;
   // params.log_level = 2;

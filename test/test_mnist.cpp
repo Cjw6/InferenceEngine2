@@ -16,7 +16,7 @@ void RunMnistModel(const std::string &model_path,
   ASSERT_FALSE(img.empty()) << "Failed to read image: " << test_img_path;
   cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
 
-  ::inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   params.device_type = device_type;
   params.model_path = model_path;
 

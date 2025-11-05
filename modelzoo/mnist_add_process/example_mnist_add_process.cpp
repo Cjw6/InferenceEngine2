@@ -13,7 +13,7 @@ void ClassifyOneImage() {
 
     LogInit();
 
-    inference::InferenceParams params;
+    auto params = inference::GetDefaultOnnxRuntimeEngineParams();
     params.model_path = model_path;
     params.log_level = 2;
 
@@ -61,7 +61,7 @@ void ClassifyDir() {
       }
     }
 
-    inference::InferenceParams params;
+    auto params = inference::GetDefaultOnnxRuntimeEngineParams();
     params.model_path = model_path;
     params.log_level = 2;
 

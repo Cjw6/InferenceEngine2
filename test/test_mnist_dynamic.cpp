@@ -56,7 +56,7 @@ void RunMnistModel(const std::string &model_path,
 
   int batch_size = 32;
 
-  ::inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   params.device_type = device_type;
   params.model_path = model_path;
   // params.log_level = 3;
@@ -235,7 +235,7 @@ void RunMnistBatch(const std::string &model_path,
   ASSERT_TRUE(!samples.empty()) << "No test samples";
 
   {
-    inference::InferenceParams params;
+    auto params = inference::GetDefaultOnnxRuntimeEngineParams();
     params.device_type = device_type;
     params.model_path = model_path;
     params.max_batch_size = batch_size;
@@ -250,7 +250,7 @@ void RunMnistBatch(const std::string &model_path,
     }
   }
 
-  inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   params.device_type = device_type;
   params.model_path = model_path;
   params.max_batch_size = batch_size;

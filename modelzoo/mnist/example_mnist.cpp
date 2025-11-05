@@ -14,7 +14,7 @@ DEFINE_string(label_path, "modelzoo/mnist/labels.txt", "");
 DEFINE_int32(max_batch_size, 5, "max batch size for inference.");
 
 inference::InferenceParams GetParams() {
-  inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   if (FLAGS_device == "cpu") {
     params.device_type = inference::DeviceType::kCPU;
   } else if (FLAGS_device == "gpu") {

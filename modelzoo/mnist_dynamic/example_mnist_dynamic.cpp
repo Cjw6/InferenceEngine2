@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
   imgs.resize(batch_size);
 
-  inference::InferenceParams params;
+  auto params = inference::GetDefaultOnnxRuntimeEngineParams();
   params.device_type = inference::kCPU;
   params.model_path = model_path;
   params.max_batch_size = batch_size;

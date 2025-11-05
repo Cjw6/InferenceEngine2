@@ -40,36 +40,53 @@ message("CMAKE_CXX_FLAGS is set to ${CMAKE_CXX_FLAGS}")
 
 set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(INFERENCE_INC_DIRS ${ROOT_PATH})
+set(INFERENCE_LINK_DIRS)
+set(INFERENCE_DEP_LIBS)
+
 # options
 option(ENABLE_CUDA "use cuda" ON)
 # 使用cuda后应该禁用 address sanitize, 否则会发生错误，只对主机代码检查内存错误
 option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
-option(ENABLE_STACKTRACE_EXCEPTION "use stacktrace exception" ON)
-option(ENABLE_ASSERTS "use asserts" ON)
+option(ENABLE_STACKTRACE "use stacktrace exception" OFF)
+option(ENABLE_ASSERTS "use asserts" OFF)
 
-if(ENABLE_STACKTRACE_EXCEPTION)
-    add_definitions("-DENABLE_CPPTRACE_EXCEPTION_STACKTRACE")
-    message(STATUS "ENABLE_CPPTRACE_EXCEPTION_STACKTRACE: ${ENABLE_CPPTRACE_EXCEPTION_STACKTRACE}")
-endif()
-if(ENABLE_ASSERTS)
-    add_definitions("-DENABLE_ASSERTS")
-    message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
-endif()
+message(STATUS "ENABLE_STACKTRACE: ${ENABLE_STACKTRACE}")
+message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 endif()
 
+if(ENABLE_STACKTRACE)
+    find_package(cpptrace REQUIRED)
+    add_definitions("-DENABLE_CPPTRACE_STACKTRACE")
+    list(APPEND INFERENCE_DEP_LIBS cpptrace::cpptrace)
+endif()
+
+if(ENABLE_ASSERTS)
+    add_definitions("-DENABLE_ASSERTS")
+endif()
+
 find_package(spdlog REQUIRED)
-find_package(cpptrace REQUIRED)
+list(APPEND INFERENCE_DEP_LIBS spdlog::spdlog)
 
 if(ENABLE_CUDA)
     find_package(CUDA)
     if(CUDA_FOUND)
         message(STATUS "cuda found!!!!")
         add_definitions("-DUSE_CUDA")
+        list(APPEND INFERENCE_INC_DIRS ${CUDA_INCLUDE_DIRS})
+        list(APPEND INFERENCE_LINK_DIRS ${CUDA_LIBRARY_DIRS})
+        list(APPEND INFERENCE_DEP_LIBS ${CUDA_LIBRARIES})
     endif()
 endif()
+
+# onnxruntime
+list(APPEND INFERENCE_INC_DIRS ${ONNXRUNTIME_DIR}/include)
+list(APPEND INFERENCE_LINK_DIRS ${ONNXRUNTIME_DIR}/lib)
+list(APPEND INFERENCE_DEP_LIBS onnxruntime)
+
 
 add_subdirectory(inference)
 add_subdirectory(modelzoo)
