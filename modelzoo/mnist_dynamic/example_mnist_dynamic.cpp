@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   const std::string jpg_ext = ".jpg";
   const std::string label_file = "modelzoo/mnist_dynamic/data/labels.txt";
 
-  auto labels = img_utils::ReadLabelsFromFile(label_file);
+  auto labels = imgutils::ReadLabelsFromFile(label_file);
   auto img_paths = cpputils::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
   LOG_INFO("img_paths:{}", cpputils::VectorToString(img_paths));
 

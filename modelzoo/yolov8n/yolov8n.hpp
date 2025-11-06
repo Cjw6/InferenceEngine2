@@ -31,8 +31,8 @@ namespace modelzoo {
 
 class YoloV8N {
 public:
-  using Threshold = detect_utils::Threshold;
-  using Result = std::vector<detect_utils::DetectBox>;
+  using Threshold = imgutils::Threshold;
+  using Result = std::vector<imgutils::DetectBox>;
 
   YoloV8N() = default;
   ~YoloV8N() = default;
@@ -88,9 +88,9 @@ private:
   int Preprocess(const cv::Mat &img) {
     auto i_tensor = engine.GetInputTensors().at("images");
     auto [dst_img, img_scale] =
-        img_utils::LetterBoxPadImage(img, cv::Size(640, 640));
+        imgutils::LetterBoxPadImage(img, cv::Size(640, 640));
     img_scales_ = img_scale;
-    img_utils::BlobNormalizeFromImage(dst_img, i_tensor.p, i_tensor.data_type);
+    imgutils::BlobNormalizeFromImage(dst_img, i_tensor.p, i_tensor.data_type);
     return 0;
   }
 
@@ -147,7 +147,7 @@ private:
     for (int i = 0; i < nmsResult.size(); ++i) {
       auto &box = boxes[nmsResult[i]];
       int idx = nmsResult[i];
-      detect_utils::DetectBox result_box;
+      imgutils::DetectBox result_box;
       result_box.class_id = class_ids[idx];
       result_box.confidence = confidences[idx];
       result_box.x = box.x;

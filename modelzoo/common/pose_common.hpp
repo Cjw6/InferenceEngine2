@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <sstream>
 
-namespace pose_utils {
+namespace imgutils {
 
 struct KeyPoint {
   int x;
@@ -50,4 +50,4 @@ inline void DrawKeyPointList(cv::Mat &img,
   }
 }
 
-} // namespace pose_utils
+} // namespace imgutils

@@ -2,7 +2,7 @@
 
 #include "inference/utils/half.hpp"
 
-namespace img_utils {
+namespace imgutils {
 
 std::vector<float> Softmax(const void *input, int len,
                            inference::TensorDataType data_type) {
@@ -87,4 +87,4 @@ std::vector<cv::Scalar> GetRandomColor(int num) {
   return colors;
 }
 
-} // namespace img_utils
+} // namespace imgutils

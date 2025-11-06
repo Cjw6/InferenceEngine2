@@ -3,7 +3,7 @@
 #include "inference/utils/log.h"
 #include <opencv2/opencv.hpp>
 
-namespace detect_utils {
+namespace imgutils {
 
 struct Threshold {
   float det_threshold = 0.5f;
@@ -61,4 +61,4 @@ inline void VisualDetectBox(cv::Mat &image, const std::vector<DetectBox> &boxes,
   }
 }
 
-} // namespace detect_utils
+} // namespace imgutils

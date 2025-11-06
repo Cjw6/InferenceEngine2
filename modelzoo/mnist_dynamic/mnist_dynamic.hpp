@@ -59,7 +59,7 @@ public:
       }
 
       auto p = i_tensor.p_arr[i];
-      img_utils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
+      imgutils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
     }
 
     int ret = engine.Run(batch_size);
@@ -74,7 +74,7 @@ public:
       auto &batch_tensor = output_tensor.at("output");
       auto p = batch_tensor.p_arr[i];
       auto result =
-          img_utils::Softmax(p, batch_tensor.mem_size, batch_tensor.data_type);
+          imgutils::Softmax(p, batch_tensor.mem_size, batch_tensor.data_type);
       auto max_iter = std::max_element(result.begin(), result.end());
       int max_idx = std::distance(result.begin(), max_iter);
       batch_result.emplace_back(max_idx, *max_iter);

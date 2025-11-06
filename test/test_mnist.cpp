@@ -25,13 +25,13 @@ void RunMnistModel(const std::string &model_path,
   ASSERT_TRUE(ret == 0) << "Failed to init engine: " << ret;
 
   auto intput_tensor = engine.GetInputTensors().at("x");
-  img_utils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
+  imgutils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
 
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
 
   auto output_tensor_ = engine.GetOutputTensors().at("linear_2");
-  auto result = img_utils::Softmax(output_tensor_.p, output_tensor_.mem_size,
+  auto result = imgutils::Softmax(output_tensor_.p, output_tensor_.mem_size,
                                    output_tensor_.data_type);
   ASSERT_TRUE(result.size() == 10) << "Invalid output size: " << result.size();
 

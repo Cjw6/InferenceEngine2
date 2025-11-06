@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   LOG_INFO("model_path: {}", FLAGS_model_path);
   LOG_INFO("label_path: {}", FLAGS_label_path);
 
-  auto labels = img_utils::ReadLabelsFromFile(FLAGS_label_path);
+  auto labels = imgutils::ReadLabelsFromFile(FLAGS_label_path);
 
   auto img_paths = cpputils::GetImgDataPaths(FLAGS_img_path, ".jpg");
   std::vector<cv::Mat> img_datas;

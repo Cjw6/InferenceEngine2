@@ -32,10 +32,10 @@ namespace modelzoo {
 
 class Yolo11NPose {
 public:
-  using Threshold = detect_utils::Threshold;
+  using Threshold = imgutils::Threshold;
   struct Object {
-    detect_utils::DetectBox box;
-    std::vector<pose_utils::KeyPoint> kps;
+    imgutils::DetectBox box;
+    std::vector<imgutils::KeyPoint> kps;
   };
   using Result = std::vector<Object>;
 
@@ -103,9 +103,9 @@ private:
 
     auto i_tensor = engine.GetInputTensors().at("images");
     auto [dst_img, img_scale] =
-        img_utils::LetterBoxPadImage(img, cv::Size(640, 640));
+        imgutils::LetterBoxPadImage(img, cv::Size(640, 640));
     img_scales_ = img_scale;
-    img_utils::BlobNormalizeFromImage(dst_img, i_tensor.p, i_tensor.data_type);
+    imgutils::BlobNormalizeFromImage(dst_img, i_tensor.p, i_tensor.data_type);
     return 0;
   }
 
@@ -167,7 +167,7 @@ private:
 
       // detect box
       auto &box = boxes[idx];
-      detect_utils::DetectBox result_box;
+      imgutils::DetectBox result_box;
       result_box.class_id = class_ids[idx];
       result_box.confidence = confidences[idx];
       result_box.x = box.x;
@@ -182,14 +182,14 @@ private:
     return 0;
   }
 
-  pose_utils::KeyPointList
+  imgutils::KeyPointList
   DecodeKetPoints(const std::vector<float *> &kp_tensor, int idx) {
     auto p = kp_tensor[idx];
     int point_num = kpt_shapes_[0];
     int point_tensor_len = kpt_shapes_[1];
-    pose_utils::KeyPointList kps;
+    imgutils::KeyPointList kps;
     for (int i = 0; i < point_num; i++) {
-      pose_utils::KeyPoint k;
+      imgutils::KeyPoint k;
       k.x = p[0] * img_scales_;
       k.y = p[1] * img_scales_;
       if (point_tensor_len == 3) {

@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  auto labels = img_utils::ReadLabelsFromFile(FLAGS_label_path);
+  auto labels = imgutils::ReadLabelsFromFile(FLAGS_label_path);
   LOG_INFO("labels:{}", cpputils::VectorToString(labels));
 
   cv::Mat img = cv::imread(FLAGS_img_path);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   auto intput_tensor = engine.GetInputTensors().at("x");
   LOG_INFO("input tensor desc: {}", cpputils::ToString(intput_tensor));
 
-  img_utils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
+  imgutils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
 
   auto output_names = engine.GetOutputNodeNames();
   for (const auto &name : output_names) {
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
   auto output_tensor_ = engine.GetOutputTensors().at("linear_2");
   LOG_INFO("output tensor desc: {}", cpputils::ToString(output_tensor_));
 
-  auto result = img_utils::Softmax(output_tensor_.p, output_tensor_.mem_size,
+  auto result = imgutils::Softmax(output_tensor_.p, output_tensor_.mem_size,
                                    output_tensor_.data_type);
   for (int i = 0; i < result.size(); ++i) {
     LOG_INFO("index: {}, value: {}", i, result[i]);

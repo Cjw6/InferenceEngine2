@@ -93,7 +93,7 @@ void RunMnistModel(const std::string &model_path,
   for (int i = 0; i < batch_size; i++) {
     auto p = input_tensors.at("input").p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
-    img_utils::BlobNormalizeFromImage(img, p,
+    imgutils::BlobNormalizeFromImage(img, p,
                                       input_tensors.at("input").data_type);
   }
 
@@ -105,7 +105,7 @@ void RunMnistModel(const std::string &model_path,
     auto &batch_tensor = output_tensor.at("output");
     auto p = batch_tensor.p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid output ptr: " << p;
-    int max_idx = img_utils::GetMaxFromSoftmax(p, batch_tensor.mem_size,
+    int max_idx = imgutils::GetMaxFromSoftmax(p, batch_tensor.mem_size,
                                                batch_tensor.data_type);
     LOG_INFO("batch {}, max idx: {}", i, max_idx);
     ASSERT_TRUE(max_idx == 0) << "Invalid max idx: " << max_idx;
@@ -151,7 +151,7 @@ public:
       if (!p) {
         THROW_RUNTIME_EXCEPTION("Invalid input ptr: " + ToString(p));
       }
-      img_utils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
+      imgutils::BlobNormalizeFromImage(imgs[i], p, i_tensor.data_type);
     }
 
     int ret = engine.Run(batch_size);
@@ -169,7 +169,7 @@ public:
         THROW_RUNTIME_EXCEPTION("Invalid output ptr: " + ToString(p));
       }
       // ASSERT_TRUE(p != nullptr) << "Invalid output ptr: " << p;
-      int max_idx = img_utils::GetMaxFromSoftmax(p, batch_tensor.mem_size,
+      int max_idx = imgutils::GetMaxFromSoftmax(p, batch_tensor.mem_size,
                                                  batch_tensor.data_type);
       max_idxs.push_back(max_idx);
     }
@@ -272,7 +272,7 @@ void RunMnistBatch(const std::string &model_path,
   for (int i = 0; i < batch_size; i++) {
     auto p = i_tensor.p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
-    img_utils::BlobNormalizeFromImage(samples[batch_sample_idx[i]].img_data, p,
+    imgutils::BlobNormalizeFromImage(samples[batch_sample_idx[i]].img_data, p,
                                       i_tensor.data_type);
   }
 
@@ -288,7 +288,7 @@ void RunMnistBatch(const std::string &model_path,
     auto p = o_tensor.p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid output ptr: " << p;
     int max_idx =
-        img_utils::GetMaxFromSoftmax(p, o_tensor.mem_size, o_tensor.data_type);
+        imgutils::GetMaxFromSoftmax(p, o_tensor.mem_size, o_tensor.data_type);
     LOG_INFO("batch {}, max idx: {}, expect: {}", i, max_idx,
              samples[batch_sample_idx[i]].result_idx);
     // ASSERT_TRUE(max_idx == samples[batch_sample_idx[i]].result_idx)

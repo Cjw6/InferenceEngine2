@@ -5,7 +5,7 @@
 
 #include "inference/tensor/tensor.h"
 
-namespace img_utils {
+namespace imgutils {
 
 template <typename T> int BlobNormalizeFromImage(const cv::Mat &img, T *blob) {
   int channels = img.channels();
@@ -85,4 +85,4 @@ std::tuple<cv::Mat, float> LetterBoxPadImage(const cv::Mat &image,
 
 std::vector<cv::Scalar> GetRandomColor(int num);
 
-} // namespace img_utils
+} // namespace imgutils

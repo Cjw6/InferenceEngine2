@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   LOG_INFO("model_path: {}", FLAGS_model_path);
   LOG_INFO("label_path: {}", FLAGS_label_path);
 
-  // auto labels = img_utils::ReadLabelsFromFile(FLAGS_label_path);
+  // auto labels = imgutils::ReadLabelsFromFile(FLAGS_label_path);
 
   auto img_paths = cpputils::GetImgDataPaths(FLAGS_img_path, ".jpg");
   LOG_INFO("img_paths:{}", cpputils::VectorToString(img_paths));
@@ -61,18 +61,18 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  auto random_color = img_utils::GetRandomColor(40);
+  auto random_color = imgutils::GetRandomColor(40);
 
   for (int i = 0; i < img_datas.size(); i++) {
     modelzoo::Yolo11NPose::Result result;
     ret = yolov11n_pose.DetectPose(img_datas[i], result);
 
-    std::vector<pose_utils::KeyPointList *> ps;
+    std::vector<imgutils::KeyPointList *> ps;
     for (auto &obj : result) {
       ps.push_back(&obj.kps);
     }
 
-    pose_utils::DrawKeyPointList(img_datas[i], ps, random_color);
+    imgutils::DrawKeyPointList(img_datas[i], ps, random_color);
     cv::imshow("result", img_datas[i]);
     cv::waitKey(0);
   }
