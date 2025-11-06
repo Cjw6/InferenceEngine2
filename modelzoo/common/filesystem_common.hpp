@@ -1,5 +1,7 @@
 #pragma once
 
+#include "inference/utils/log.h"
+#include "inference/utils/to_string.h"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -20,15 +22,32 @@ auto files = GetAllFilesWithExt("/path/to/dir", ".txt");
 */
 inline std::vector<fs::path> GetAllFilesWithExt(const char *path,
                                                 std::string ext) {
-    std::vector<fs::path> files;
-    for (const auto &entry : fs::directory_iterator(path)) {
-        if (entry.is_regular_file()) {
-            if (entry.path().extension() == ext) {
-                files.push_back(entry.path());
-            }
-        }
+  std::vector<fs::path> files;
+  for (const auto &entry : fs::directory_iterator(path)) {
+    if (entry.is_regular_file()) {
+      if (entry.path().extension() == ext) {
+        files.push_back(entry.path());
+      }
     }
-    return files;
+  }
+  return files;
 }
 
-}  // namespace cpputils
+inline std::vector<std::string> GetImgDataPaths(const std::string &img_path,
+                                                const std::string &ext) {
+  std::vector<std::string> img_paths;
+  if (fs::is_regular_file(img_path)) {
+    if (fs::path(img_path).extension() == ext) {
+      img_paths.push_back(img_path);
+    }
+  }
+  if (fs::is_directory(img_path)) {
+    auto files = cpputils::GetAllFilesWithExt(img_path.c_str(), ".jpg");
+    for (auto &file : files) {
+      img_paths.push_back(file);
+    }
+  }
+  return img_paths;
+}
+
+} // namespace cpputils

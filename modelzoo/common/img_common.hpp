@@ -80,32 +80,9 @@ int GetMaxFromSoftmax(const void *input, int len,
 void BlobNormalizeFromImage(const cv::Mat &img, void *blob,
                             inference::TensorDataType data_type);
 
-inline std::tuple<cv::Mat, float> LetterBoxPadImage(const cv::Mat &image,
-                                                    const cv::Size &new_shape) {
-  cv::Mat iImg, oImg;
-  iImg = image;
-  if (image.channels() == 3) {
-    oImg = iImg.clone();
-    cv::cvtColor(oImg, oImg, cv::COLOR_BGR2RGB);
-  } else {
-    cv::cvtColor(iImg, oImg, cv::COLOR_GRAY2RGB);
-  }
+std::tuple<cv::Mat, float> LetterBoxPadImage(const cv::Mat &image,
+                                             const cv::Size &new_shape);
 
-  std::vector<int> iImgSize = {new_shape.width, new_shape.height};
-  float resizeScales_ = 1.0;
-  if (iImg.cols >= iImg.rows) {
-    resizeScales_ = iImg.cols / (float)iImgSize.at(0);
-    cv::resize(oImg, oImg,
-               cv::Size(iImgSize.at(0), int(iImg.rows / resizeScales_)));
-  } else {
-    resizeScales_ = iImg.rows / (float)iImgSize.at(0);
-    cv::resize(oImg, oImg,
-               cv::Size(int(iImg.cols / resizeScales_), iImgSize.at(1)));
-  }
-  cv::Mat tempImg = cv::Mat::zeros(iImgSize.at(0), iImgSize.at(1), CV_8UC3);
-  oImg.copyTo(tempImg(cv::Rect(0, 0, oImg.cols, oImg.rows)));
-  oImg = tempImg;
-  return {oImg, resizeScales_};
-}
+std::vector<cv::Scalar> GetRandomColor(int num);
 
 } // namespace img_utils

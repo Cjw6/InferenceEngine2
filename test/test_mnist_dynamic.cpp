@@ -43,7 +43,8 @@ using cpputils::VectorToString;
 
 namespace {
 
-const std::string fp32_model_path = "modelzoo/mnist_dynamic/data/mnist_dynamic.onnx";
+const std::string fp32_model_path =
+    "modelzoo/mnist_dynamic/data/mnist_dynamic.onnx";
 // const std::string fp16_model_path = "modelzoo/mnist/mnist_fp16.onnx";
 const std::string test_img_path = "modelzoo/mnist_dynamic/data/0001-0.jpg";
 // const std::string label_path = "modelzoo/mnist/labels.txt";
@@ -92,7 +93,8 @@ void RunMnistModel(const std::string &model_path,
   for (int i = 0; i < batch_size; i++) {
     auto p = input_tensors.at("input").p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
-    img_utils::BlobNormalizeFromImage(img, p, input_tensors.at("input").data_type);
+    img_utils::BlobNormalizeFromImage(img, p,
+                                      input_tensors.at("input").data_type);
   }
 
   ret = engine.Run(32);
@@ -188,8 +190,8 @@ struct TestImgSample {
 };
 
 std::ostream &operator<<(std::ostream &s, const TestImgSample &sample) {
-  return s << "img_path: " << sample.img_path
-           << ", result_idx: " << sample.result_idx;
+  return s << "TestImgSample(img_path: " << sample.img_path
+           << ", result_idx: " << sample.result_idx << ")";
 }
 
 using TestImgSampleArr = std::vector<TestImgSample>;
@@ -271,7 +273,7 @@ void RunMnistBatch(const std::string &model_path,
     auto p = i_tensor.p_arr[i];
     ASSERT_TRUE(p != nullptr) << "Invalid input ptr: " << p;
     img_utils::BlobNormalizeFromImage(samples[batch_sample_idx[i]].img_data, p,
-                             i_tensor.data_type);
+                                      i_tensor.data_type);
   }
 
   ret = engine.Run(batch_size);

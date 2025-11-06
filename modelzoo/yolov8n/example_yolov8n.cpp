@@ -12,20 +12,6 @@ DEFINE_string(img_path, "modelzoo/yolov8n/data/img", "image path");
 DEFINE_string(model_path, "modelzoo/yolov8n/data/yolov8n.onnx", "model path");
 DEFINE_string(label_path, "modelzoo/yolov8n/data/labels.txt", "label path");
 
-std::vector<std::string> GetImgDataPaths() {
-  std::vector<std::string> img_paths;
-  if (fs::is_regular_file(FLAGS_img_path)) {
-    img_paths.push_back(FLAGS_img_path);
-  }
-  if (fs::is_directory(FLAGS_img_path)) {
-    auto files = cpputils::GetAllFilesWithExt(FLAGS_img_path.c_str(), ".jpg");
-    for (auto &file : files) {
-      img_paths.push_back(file);
-    }
-  }
-  return img_paths;
-}
-
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   LOG_INFO("img_path: {}", FLAGS_img_path);
@@ -34,7 +20,7 @@ int main(int argc, char **argv) {
 
   auto labels = img_utils::ReadLabelsFromFile(FLAGS_label_path);
 
-  auto img_paths = GetImgDataPaths();
+  auto img_paths = cpputils::GetImgDataPaths(FLAGS_img_path, ".jpg");
   std::vector<cv::Mat> img_datas;
   for (auto &f : img_paths) {
     cv::Mat img = cv::imread(f);

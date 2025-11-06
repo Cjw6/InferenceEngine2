@@ -27,9 +27,9 @@ std::ostream &operator<<(std::ostream &s,
   auto symbolic_dims = info.GetSymbolicDimensions();
   auto shape = info.GetShape();
 
-  s << fmt::format("Ort::ConstTensorTypeAndShapeInfo {{elem_type {}, "
+  s << fmt::format("Ort::ConstTensorTypeAndShapeInfo(elem_type {}, "
                    "elem_count {}, dims_count {}, "
-                   "symbolic_dims {}, shape {}}}",
+                   "symbolic_dims {}, shape {})",
                    (int)elem_type, elem_count, dims_count,
                    cpputils::VectorToString(symbolic_dims),
                    cpputils::VectorToString(shape));
