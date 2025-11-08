@@ -1,6 +1,114 @@
 import argparse
+from operator import le
 import subprocess
 import os
+import sys
+
+"""
+Usage:
+    python build_tool.py <config> [args]
+"""
+
+EXTRA_ARGS: list[str] = []
+
+
+def config_map():
+    conf_map = {
+        # cmake
+        "cmake_debug": [
+            "--task",
+            "cmake",
+            "--build_dir",
+            "build/debug",
+            "--enable_debug_mode",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+        "cmake_release": [
+            "--task",
+            "cmake",
+            "--build_dir",
+            "build/release",
+            "--build_type",
+            "Release",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+        "cmake_relwithdebinfo": [
+            "--task",
+            "cmake",
+            "--build_dir",
+            "build/relwithdebinfo",
+            "--build_type",
+            "RelWithDebInfo",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+        # build
+        "build_debug": [
+            "--task",
+            "build",
+            "--build_dir",
+            "build/debug",
+        ],
+        "build_release": [
+            "--task",
+            "build",
+            "--build_dir",
+            "build/release",
+        ],
+        "build_relwithdebinfo": [
+            "--task",
+            "build",
+            "--build_dir",
+            "build/relwithdebinfo",
+        ],
+        # cmake + build
+        "debug": [
+            "--task",
+            "all",
+            "--build_dir",
+            "build/debug",
+            "--enable_debug_mode",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+        "release": [
+            "--task",
+            "all",
+            "--build_dir",
+            "build/release",
+            "--build_type",
+            "Release",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+        "relwithdebinfo": [
+            "--task",
+            "all",
+            "--build_dir",
+            "build/relwithdebinfo",
+            "--build_type",
+            "RelWithDebInfo",
+            "--onnxruntime_dir",
+            "/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+        ],
+    }
+    return conf_map
+
+
+# Basic ANSI color codes
+class TermColors:
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    MAGENTA = "\033[95m"
+    CYAN = "\033[96m"
+    WHITE = "\033[97m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
 
 
 def build_argparser():
@@ -8,20 +116,28 @@ def build_argparser():
     # task select
     parser.add_argument("--task", dest="task", type=str, default="all")
 
-    # build pos
+    # CMakeLists.txt pos
     parser.add_argument("--cmake_dir", dest="cmake_dir", type=str, default=None)
+
+    # build binary pos
     parser.add_argument("--build_dir", dest="build_dir", type=str, default=None)
 
     # build config
     parser.add_argument("--build_type", dest="build_type", type=str, default="Debug")
-    parser.add_argument(
-        "--enable_debug_mode", dest="enable_debug_mode", action="store_true"
-    )
-    parser.add_argument("--verbose", dest="verbose", action="store_true")
+
+    # build target
     parser.add_argument("--target", dest="target", type=str, default=None)
+
+    # build verbose
+    parser.add_argument("--verbose", dest="verbose", action="store_true")
 
     # install pos
     parser.add_argument("--install_dir", dest="install_dir", type=str, default=None)
+
+    # debug option
+    parser.add_argument(
+        "--enable_debug_mode", dest="enable_debug_mode", action="store_true"
+    )
 
     # onnxruntime
     parser.add_argument(
@@ -34,7 +150,7 @@ def build_argparser():
     parser.add_argument("--cuda_dir", dest="cuda_dir", type=str, default=None)
     parser.add_argument("--cudnn_dir", dest="cudnn_dir", type=str, default=None)
 
-    return parser.parse_args()
+    return parser
 
 
 def task_map():
@@ -102,10 +218,14 @@ def cmake_task_func(args):
     if args.install_dir is not None:
         cmd_args.append("-DCMAKE_INSTALL_PREFIX={}".format(args.install_dir))
 
-    print("cmake cmd:", cmd_args)
+    print(f"{TermColors.GREEN}cmake cmd: {cmd_args}{TermColors.END}")
     result = subprocess.run(cmd_args, text=True)
     if result.returncode != 0:
-        raise Exception("cmake failed!!!. {}".format(result.returncode))
+        raise Exception(
+            f"{TermColors.RED}cmake failed!!!{result.returncode=}{TermColors.END}"
+        )
+
+    print(f"{TermColors.BLUE}cmake success!!!{TermColors.END}")
 
 
 def build_task_func(args):
@@ -118,10 +238,12 @@ def build_task_func(args):
     if args.verbose:
         cmd_args.append("-v")
 
-    print("build cmd: ", cmd_args)
+    print(f"{TermColors.GREEN}build cmd: {cmd_args}{TermColors.END}")
     result = subprocess.run(cmd_args, text=True, cwd=build_dir)
     if result.returncode != 0:
         raise Exception("build failed!!!. {}".format(result.returncode))
+
+    print(f"{TermColors.BLUE}build success!!!{TermColors.END}")
 
 
 def install_task_func(args):
@@ -133,10 +255,12 @@ def install_task_func(args):
     if args.verbose:
         cmd_args.append("-v")
 
-    print("install cmd: ", cmd_args)
+    print(f"{TermColors.GREEN}install cmd: {cmd_args}{TermColors.END}")
     result = subprocess.run(cmd_args, text=True, cwd=build_dir)
     if result.returncode != 0:
         raise Exception("install failed!!!. {}".format(result.returncode))
+
+    print(f"{TermColors.BLUE}install success!!!{TermColors.END}")
 
 
 def all_task_func(args):
@@ -146,6 +270,23 @@ def all_task_func(args):
         install_task_func(args)
 
 
-if __name__ == "__main__":
-    args = build_argparser()
+def run_build_pipeline():
+    config = sys.argv[1]
+    configure = config_map()[config]
+    if len(sys.argv) > 2:
+        configure.extend(sys.argv[2:])
+
+    print(f"{configure=}")
+
+    parser = build_argparser()
+    args = parser.parse_args(configure)
+
     task_map()[args.task](args)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python build_tool.py <config> [args]")
+        sys.exit(1)
+
+    run_build_pipeline()
