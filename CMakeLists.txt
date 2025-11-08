@@ -45,14 +45,17 @@ set(INFERENCE_LINK_DIRS)
 set(INFERENCE_DEP_LIBS)
 
 # options
-option(ENABLE_CUDA "use cuda" ON)
+option(ENABLE_EXPERIMENT "use experiment" OFF)
 # 使用cuda后应该禁用 address sanitize, 否则会发生错误，只对主机代码检查内存错误
 option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
 option(ENABLE_STACKTRACE "use stacktrace exception" OFF)
 option(ENABLE_ASSERTS "use asserts" OFF)
+option(ENABLE_CUDA "use cuda" ON)
 
+message(STATUS "ENABLE_EXPERIMENT: ${ENABLE_EXPERIMENT}")
 message(STATUS "ENABLE_STACKTRACE: ${ENABLE_STACKTRACE}")
 message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
+message(STATUS "ENABLE_CUDA: ${ENABLE_CUDA}")
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
@@ -70,6 +73,9 @@ endif()
 
 find_package(spdlog REQUIRED)
 list(APPEND INFERENCE_DEP_LIBS spdlog::spdlog)
+
+# find_package(rapidjson REQUIRED)
+# list(APPEND INFERENCE_DEP_LIBS rapidjson::rapidjson)
 
 if(ENABLE_CUDA)
     find_package(CUDA)
@@ -91,3 +97,6 @@ list(APPEND INFERENCE_DEP_LIBS onnxruntime)
 add_subdirectory(inference)
 add_subdirectory(modelzoo)
 add_subdirectory(test)
+if(ENABLE_EXPERIMENT)
+    add_subdirectory(experiment)
+endif()

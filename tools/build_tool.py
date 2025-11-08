@@ -1,5 +1,6 @@
 import argparse
 from operator import le
+from re import A
 import subprocess
 import os
 import sys
@@ -125,8 +126,11 @@ def build_argparser():
     # build config
     parser.add_argument("--build_type", dest="build_type", type=str, default="Debug")
 
+    # generator
+    parser.add_argument("--generator", dest="generator", type=str, default="Ninja")
+
     # build target
-    parser.add_argument("--target", dest="target", type=str, default=None)
+    parser.add_argument("--target", dest="target", type=str, default="all")
 
     # build verbose
     parser.add_argument("--verbose", dest="verbose", action="store_true")
@@ -149,6 +153,13 @@ def build_argparser():
     parser.add_argument("--nvcc", dest="nvcc", type=str, default=None)
     parser.add_argument("--cuda_dir", dest="cuda_dir", type=str, default=None)
     parser.add_argument("--cudnn_dir", dest="cudnn_dir", type=str, default=None)
+
+    # extra args
+    # 解析 -- 后的参数
+    # examples:
+    # python ./tools/build_tool.py  debug  --target inference  --  -DENABLE_EXPERIMENT=ON
+    # extra_args = ['-DENABLE_EXPERIMENT=ON']
+    parser.add_argument("extra_args", nargs="*")
 
     return parser
 
@@ -191,13 +202,16 @@ def cmake_task_func(args):
         "cmake",
         "-DCMAKE_BUILD_TYPE={}".format(args.build_type),
         "-G",
-        "Ninja",
+        args.generator,
         "-S",
         cmake_source_dir,
         "-B",
         build_dir,
         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     ]
+
+    if args.extra_args is not None:
+        cmd_args.extend(args.extra_args)
 
     if args.enable_debug_mode:
         arg_list = ["-DENABLE_STACKTRACE=ON", "-DENABLE_ASSERTS=ON"]
@@ -231,15 +245,18 @@ def cmake_task_func(args):
 def build_task_func(args):
     cmake_source_dir, build_dir = get_cmake_and_build_dir(args)
     cmd_args = [
-        "ninja",
+        "cmake",
+        "--build",
+        build_dir,
+        "--target",
+        args.target,
     ]
-    if args.target is not None:
-        cmd_args.append(args.target)
+
     if args.verbose:
-        cmd_args.append("-v")
+        cmd_args.append("--verbose")
 
     print(f"{TermColors.GREEN}build cmd: {cmd_args}{TermColors.END}")
-    result = subprocess.run(cmd_args, text=True, cwd=build_dir)
+    result = subprocess.run(cmd_args, text=True)
     if result.returncode != 0:
         raise Exception("build failed!!!. {}".format(result.returncode))
 
@@ -248,12 +265,9 @@ def build_task_func(args):
 
 def install_task_func(args):
     cmake_source_dir, build_dir = get_cmake_and_build_dir(args)
-    cmd_args = [
-        "ninja",
-        "install",
-    ]
+    cmd_args = ["cmake", "--install", build_dir, "--target", args.target]
     if args.verbose:
-        cmd_args.append("-v")
+        cmd_args.append("--verbose")
 
     print(f"{TermColors.GREEN}install cmd: {cmd_args}{TermColors.END}")
     result = subprocess.run(cmd_args, text=True, cwd=build_dir)
