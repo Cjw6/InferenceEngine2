@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
             fmt::format("img_datas.size():{} != img_paths.size():{}",
                         img_datas.size(), img_paths.size()));
 
-  modelzoo::Yolo11NSeg yolov11n_pose;
+  modelzoo::Yolo11NPose yolov11n_pose;
   yolov11n_pose.SetKptShapes({17, 3});
   int ret = yolov11n_pose.Init(infer_params);
   if (ret != 0) {
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
   auto random_color = imgutils::GetRandomColor(40);
 
   for (int i = 0; i < img_datas.size(); i++) {
-    modelzoo::Yolo11NSeg::Result result;
+    modelzoo::Yolo11NPose::Result result;
     ret = yolov11n_pose.DetectPose(img_datas[i], result);
 
     std::vector<imgutils::KeyPointList *> ps;
