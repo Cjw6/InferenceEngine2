@@ -1,3 +1,13 @@
+// TODO optimize:
+
+// clang-format off
+/*
+2025-11-07 00:16:30.740754226 [W:onnxruntime:, transformer_memcpy.cc:111 ApplyImpl] 4 Memcpy nodes are added to the graph main_graph for CUDAExecutionProvider. It might have negative impact on performance (including unable to run CUDA graph). Set session_options.log_severity_level=1 to see the detail logs before this message.
+2025-11-07 00:16:30.741726124 [W:onnxruntime:, session_state.cc:1316 VerifyEachNodeIsAssignedToAnEp] Some nodes were not assigned to the preferred execution providers which may or may not have an negative impact on performance. e.g. ORT explicitly assigns shape related ops to CPU to improve perf.
+2025-11-07 00:16:30.741751302 [W:onnxruntime:, session_state.cc:1318 VerifyEachNodeIsAssignedToAnEp] Rerunning with verbose output on a non-minimal build will show node assignments.
+*/
+// clang-format on
+
 #include <gflags/gflags.h>
 
 #include "inference/inference.h"
@@ -46,7 +56,7 @@ int main(int argc, char **argv) {
             fmt::format("img_datas.size():{} != img_paths.size():{}",
                         img_datas.size(), img_paths.size()));
 
-  modelzoo::Yolo11NPose yolov11n_pose;
+  modelzoo::Yolo11NSeg yolov11n_pose;
   yolov11n_pose.SetKptShapes({17, 3});
   int ret = yolov11n_pose.Init(infer_params);
   if (ret != 0) {
@@ -64,7 +74,7 @@ int main(int argc, char **argv) {
   auto random_color = imgutils::GetRandomColor(40);
 
   for (int i = 0; i < img_datas.size(); i++) {
-    modelzoo::Yolo11NPose::Result result;
+    modelzoo::Yolo11NSeg::Result result;
     ret = yolov11n_pose.DetectPose(img_datas[i], result);
 
     std::vector<imgutils::KeyPointList *> ps;

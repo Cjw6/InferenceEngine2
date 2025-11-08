@@ -175,15 +175,15 @@ private:
       result_box.w = box.width;
       result_box.h = box.height;
 
-      auto kps = DecodeKetPoints(key_pointers, idx);
+      auto kps = DecodeKeyPoints(key_pointers, idx);
       result.push_back({result_box, kps});
     }
 
     return 0;
   }
 
-  imgutils::KeyPointList
-  DecodeKetPoints(const std::vector<float *> &kp_tensor, int idx) {
+  imgutils::KeyPointList DecodeKeyPoints(const std::vector<float *> &kp_tensor,
+                                         int idx) {
     auto p = kp_tensor[idx];
     int point_num = kpt_shapes_[0];
     int point_tensor_len = kpt_shapes_[1];
@@ -206,17 +206,5 @@ private:
   float img_scales_ = 0.0f;
   std::vector<int> kpt_shapes_;
 };
-
-// inline std::ostream &operator<<(std::ostream &os,
-//                                 const Yolo11NPose::Result &result) {
-//   return os << cpputils::VectorToString(result);
-// }
-
-// inline std::ostream &operator<<(std::ostream &os,
-                                // const Yolo11NPose::Object &result) {
-  // return os << cpputils::VectorToString(result);
-// }
-
-
 
 } // namespace modelzoo
