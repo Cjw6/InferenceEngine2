@@ -1,3 +1,5 @@
+message(STATUS "add model zoo !!!")
+
 find_package(OpenCV REQUIRED)
 file(GLOB_RECURSE COMMON_SRC "common/*.cpp" "common/*.h" "common/*.hpp")
 add_library(common ${COMMON_SRC})

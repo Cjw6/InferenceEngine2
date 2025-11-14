@@ -3,6 +3,7 @@
 #include "inference/inference.h"
 #include "inference/utils/assert.h"
 #include "inference/utils/exception.h"
+#include "inference/utils/log.h"
 #include "inference/utils/to_string.h"
 #include "modelzoo/common/filesystem_common.hpp"
 #include "modelzoo/common/img_common.hpp"
@@ -13,6 +14,7 @@ DEFINE_string(model_path, "modelzoo/yolov8n/data/yolov8n.onnx", "model path");
 DEFINE_string(label_path, "modelzoo/yolov8n/data/labels.txt", "label path");
 
 int main(int argc, char **argv) {
+  LogInit();
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   LOG_INFO("img_path: {}", FLAGS_img_path);
   LOG_INFO("model_path: {}", FLAGS_model_path);
@@ -31,6 +33,7 @@ int main(int argc, char **argv) {
       img_datas.push_back(img);
     }
   }
+  LOG_DEBUG("img_datas.size(): {}", img_datas.size());
 
   auto infer_params = inference::GetDefaultOnnxRuntimeEngineParams();
   infer_params.device_type = inference::kGPU;
@@ -41,6 +44,7 @@ int main(int argc, char **argv) {
                         img_datas.size(), img_paths.size()));
 
   modelzoo::YoloV8N yolov8n;
+  yolov8n.SetClassNum(labels.size());
   int ret = yolov8n.Init(infer_params);
   if (ret != 0) {
     LOG_ERROR("init yolov8n failed");
@@ -53,6 +57,8 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  auto random_colors = imgutils::GetRandomColor(labels.size());
+
   for (int i = 0; i < img_datas.size(); i++) {
     auto &img = img_datas[i];
     auto &img_path = img_paths[i];
@@ -62,5 +68,11 @@ int main(int argc, char **argv) {
       LOG_ERROR("detect yolov8n failed, img_path: {}", img_path);
       continue;
     }
+
+    LOG_DEBUG("{}: detect result: {}", i, result.size());
+    imgutils::VisualDetectBox(img, result, random_colors, labels);
+    cv::imshow("result", img);
+    cv::waitKey(0);
+
   }
 }

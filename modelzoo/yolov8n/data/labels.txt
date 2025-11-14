@@ -1,13 +1,13 @@
-Person
-icycle
-ar
-otorcycle
-irplane
-us
-rain
-ruck
-oat
-raffic light
+person
+bicycle
+car
+motorcycle
+airplane
+bus
+train
+truck
+boat
+traffic light
 fire hydrant
 stop sign
 parking meter

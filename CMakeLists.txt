@@ -74,8 +74,10 @@ endif()
 find_package(spdlog REQUIRED)
 list(APPEND INFERENCE_DEP_LIBS spdlog::spdlog)
 
-# find_package(rapidjson REQUIRED)
-# list(APPEND INFERENCE_DEP_LIBS rapidjson::rapidjson)
+# xtensor
+find_package(xtl REQUIRED)
+find_package(xtensor REQUIRED)
+# list(APPEND INFERENCE_DEP_LIBS xtensor)
 
 if(ENABLE_CUDA)
     find_package(CUDA)

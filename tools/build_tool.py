@@ -1,6 +1,4 @@
 import argparse
-from operator import le
-from re import A
 import subprocess
 import os
 import sys

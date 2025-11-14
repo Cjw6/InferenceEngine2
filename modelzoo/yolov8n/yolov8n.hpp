@@ -38,6 +38,7 @@ public:
   ~YoloV8N() = default;
 
   void SetThreshold(const Threshold &threshold) { threshold_ = threshold; }
+  void SetClassNum(int class_num) { class_num_ = class_num; }
 
   int Init(const inference::InferenceParams &params) {
     int ret = engine.Init(params);
@@ -100,7 +101,7 @@ private:
     const auto &o_data = o_tensor.p;
     const auto &o_data_type = o_tensor.data_type;
     int signalResultNum = o_shape[1]; // 84
-    int class_cnt = signalResultNum - 4;
+    int class_cnt = class_num_;
     int strideNum = o_shape[2]; // 8400
 
     std::vector<int> class_ids;
@@ -164,6 +165,7 @@ private:
   inference::OnnxRuntimeEngine engine;
   Threshold threshold_ = {0.1, 0.5};
   float img_scales_ = 0.0f;
+  int class_num_ = 0;
 };
 
 } // namespace modelzoo

@@ -4,4 +4,4 @@ build
 /logs/
 /test_results.json
 /TODO.md
-/*.npy
+*.npy
