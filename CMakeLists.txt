@@ -77,7 +77,7 @@ list(APPEND INFERENCE_DEP_LIBS spdlog::spdlog)
 # xtensor
 find_package(xtl REQUIRED)
 find_package(xtensor REQUIRED)
-# list(APPEND INFERENCE_DEP_LIBS xtensor)
+list(APPEND INFERENCE_DEP_LIBS xtensor)
 
 if(ENABLE_CUDA)
     find_package(CUDA)

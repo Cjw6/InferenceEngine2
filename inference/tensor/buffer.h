@@ -92,8 +92,8 @@ public:
   void deviceToHost(cudaStream_t stream = nullptr) override;
 #endif
 private:
-  void *host_; // < 设备内存指针
-  size_t size_;  // < 内存大小
+  void *host_;  // < 设备内存指针
+  size_t size_; // < 内存大小
 };
 
 #ifdef USE_CUDA

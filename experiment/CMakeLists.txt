@@ -9,4 +9,6 @@ function(add_experiment dir_name dep_libs)
     message(STATUS "add experiment [${exe_name}] !!!")
 endfunction()
 
-add_experiment(xtensor_seg "inference;xtensor")
+# add_experiment(xtensor_seg "inference;xtensor")
+
+add_experiment(npy_data "inference")

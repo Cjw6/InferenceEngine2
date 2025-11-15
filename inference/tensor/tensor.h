@@ -48,6 +48,13 @@ struct TensorDataPointer {
   int64_t GetBatchSize() const { return p_arr.size(); }
 };
 
+struct TensorData {
+  std::unique_ptr<TensorBuffer> data;
+  TensorDataPointer pointer;
+
+  bool Empty() const { return !data; }
+};
+
 std::ostream &operator<<(std::ostream &s,
                          const TensorDataPointer &tensor_pointer);
 
