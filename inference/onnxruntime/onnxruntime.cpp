@@ -121,7 +121,8 @@ private:
   Ort::RunOptions run_options_;
 
   Ort::AllocatorWithDefaultOptions allocator_;
-  std::unique_ptr<Ort::Env> env_ = nullptr;  // FIXME： Ort::Env 应该全局唯一，多次初始化可能出错
+  std::unique_ptr<Ort::Env> env_ =
+      nullptr; // FIXME： Ort::Env 应该全局唯一，多次初始化可能出错
   std::unique_ptr<Ort::Session> session_ = nullptr;
 
   DeviceType inference_device_type_ = kCPU;

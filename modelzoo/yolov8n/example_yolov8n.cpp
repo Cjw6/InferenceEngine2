@@ -9,7 +9,7 @@
 #include "modelzoo/common/img_common.hpp"
 #include "modelzoo/yolov8n/yolov8n.hpp"
 
-DEFINE_string(img_path, "modelzoo/yolov8n/data/img", "image path");
+DEFINE_string(img_path, "modelzoo/yolov8n/data/img/bus.jpg", "image path");
 DEFINE_string(model_path, "modelzoo/yolov8n/data/yolov8n.onnx", "model path");
 DEFINE_string(label_path, "modelzoo/yolov8n/data/labels.txt", "label path");
 
