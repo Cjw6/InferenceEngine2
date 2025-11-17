@@ -12,11 +12,17 @@ namespace modelzoo {
 
 class Yolo11NSeg {
 public:
+  struct ImageInfo {
+    cv::Size raw_size;
+    cv::Vec4d trans;
+  };
+
   struct ResultObj {
     int id = 0;
     float accu = 0.0;
-    cv::Rect bound;
-    cv::Mat mask;
+    cv::Rect bound;                        // 图像位置
+    cv::Mat mask;                          // 相对Rect 位置
+    std::vector<cv::Point> mask_countours; // 图像位置
   };
 
   using Result = std::vector<ResultObj>;
@@ -40,7 +46,7 @@ private:
   int Postprocess(Result &result);
 
   std::unique_ptr<inference::OnnxRuntimeEngine> engine_;
-  float img_scales_ = 0.0f;
+  ImageInfo img_info_;
 };
 
 } // namespace modelzoo

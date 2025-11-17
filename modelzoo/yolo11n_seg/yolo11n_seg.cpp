@@ -30,13 +30,14 @@ int seg_w = 160, seg_h = 160;
 int net_w = 640, net_h = 640;
 float accu_thresh = 0.25, mask_thresh = 0.5;
 
-struct ImageInfo {
-  cv::Size raw_size;
-  cv::Vec4d trans;
-};
+// struct ImageInfo {
+//   cv::Size raw_size;
+//   cv::Vec4d trans;
+// };
 
 void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
-             const ImageInfo &para, cv::Rect bound, cv::Mat &mast_out) {
+             const modelzoo::Yolo11NSeg::ImageInfo &para, cv::Rect bound,
+             cv::Mat &mast_out, std::vector<cv::Point> &mask_countours) {
   cv::Vec4f trans = para.trans;
   int r_x = floor((bound.x * trans[0] + trans[2]) / net_w * seg_w);
   int r_y = floor((bound.y * trans[1] + trans[3]) / net_h * seg_h);
@@ -48,6 +49,10 @@ void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
       r_y;
   r_w = MAX(r_w, 1);
   r_h = MAX(r_h, 1);
+
+  LOG_DEBUG("mask bound:{}, {}, {}, {}, {}, {}", r_x, r_y, r_w, r_h, seg_w,
+            seg_h);
+
   if (r_x + r_w > seg_w) // crop
   {
     seg_w - r_x > 0 ? r_w = seg_w - r_x : r_x -= 1;
@@ -63,7 +68,7 @@ void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
   cv::Mat matmul_res = (mask_info * protos).t();
   cv::Mat masks_feature = matmul_res.reshape(1, {r_h, r_w});
   cv::Mat dest;
-  exp(-masks_feature, dest); // sigmoid
+  cv::exp(-masks_feature, dest); // sigmoid
   dest = 1.0 / (1.0 + dest);
   int left = floor((net_w / seg_w * r_x - trans[2]) / trans[0]);
   int top = floor((net_h / seg_h * r_y - trans[3]) / trans[1]);
@@ -72,9 +77,36 @@ void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
   cv::Mat mask;
   cv::resize(dest, mask, cv::Size(width, height));
   mast_out = mask(bound - cv::Point(left, top)) > mask_thresh;
+
+  LOG_DEBUG("l:{} t:{} w:{} h:{}", left, top, width, height);
+  std::cout  << "mask_out.type()"<< mast_out.type() << std::endl;
+  LOG_DEBUG("mask_out.size(): {}", cpputils::ToString(mast_out.size()));
+ 
+  // 获得边界框
+  cv::Mat real_img =
+      cv::Mat::zeros(para.raw_size.height, para.raw_size.width, CV_8UC1);
+
+  auto roi = real_img(bound);
+  mast_out.copyTo(roi);
+  
+  // real_img(cv::Rect(left, top, width, height)).setTo(cv::Scalar(255), mast_out);
+  std::vector<std::vector<cv::Point>> contours;
+  cv::findContours(real_img, contours, cv::RETR_EXTERNAL,
+                   cv::CHAIN_APPROX_SIMPLE);
+  mask_countours.clear();
+  if (contours.size() > 0) {
+    int idx = 0;
+    for (int i = 0; i < contours.size(); i++) {
+      if (contours[i].size() > contours[idx].size()) {
+        idx = i;
+      }
+    }
+    mask_countours = contours[idx];
+  }
 }
 
-void DecodeOutput(cv::Mat &output0, cv::Mat &output1, ImageInfo para,
+void DecodeOutput(cv::Mat &output0, cv::Mat &output1,
+                  modelzoo::Yolo11NSeg::ImageInfo para,
                   std::vector<modelzoo::Yolo11NSeg::ResultObj> &output,
                   int class_cnt) {
   auto trans = para.trans;
@@ -117,7 +149,8 @@ void DecodeOutput(cv::Mat &output0, cv::Mat &output1, ImageInfo para,
     // boxes[idx] & cv::Rect(0, 0, para.raw_size.width, para.raw_size.height);
     modelzoo::Yolo11NSeg::ResultObj result = {class_ids[idx], accus[idx],
                                               boxes[idx]};
-    GetMask(cv::Mat(masks[idx]).t(), output1, para, boxes[idx], result.mask);
+    GetMask(cv::Mat(masks[idx]).t(), output1, para, boxes[idx], result.mask,
+            result.mask_countours);
     output.push_back(result);
   }
 }
@@ -183,7 +216,11 @@ int Yolo11NSeg::Preprocess(const cv::Mat &img) {
   auto i_tensor = engine_->GetInputTensors().at("images");
   auto [dst_img, img_scale] =
       imgutils::LetterBoxPadImage(img, cv::Size(640, 640));
-  img_scales_ = img_scale;
+  // img_scales_ = img_scale;
+  img_info_.raw_size.width = img.cols;
+  img_info_.raw_size.height = img.rows;
+  img_info_.trans = {1.0f / img_scale, 1.0f / img_scale, 0, 0};
+
   imgutils::BlobNormalizeFromImage(dst_img, i_tensor.p, i_tensor.data_type);
   return 0;
 }
@@ -200,10 +237,10 @@ int Yolo11NSeg::Postprocess(Result &result) {
   std::vector<int> mask_sz = {1, (int)mask_shape[1], (int)mask_shape[2],
                               (int)mask_shape[3]};
   cv::Mat output1 = cv::Mat(mask_sz, CV_32F, output_1.p);
-  ImageInfo img_info = {cv::Size(640, 640),
-                        {1.0f / img_scales_, 1.0f / img_scales_, 0, 0}};
+  // ImageInfo img_info = {cv::Size(640, 640),
+  // {1.0f / img_scales_ , 1.0f / img_scales_, 0, 0}};
 
-  DecodeOutput(output0, output1, img_info, result, 80);
+  DecodeOutput(output0, output1, img_info_, result, 80);
   return 0;
 }
 
@@ -222,6 +259,10 @@ void Yolo11NSeg::DrawResult(cv::Mat &img, Result &result,
     std::string label = std::format("{}:{:.2f}", result[i].id, result[i].accu);
     putText(img, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 2,
             color[result[i].id], 4);
+    auto &mask_countours = result[i].mask_countours;
+    for (auto &point : mask_countours) {
+      cv::circle(mask, point, 2, cv::Scalar(0, 0, 255), -1);
+    }
   }
   addWeighted(img, 0.6, mask, 0.4, 0, img); // add mask to src
 }
