@@ -25,13 +25,6 @@ TensorDesc(data_type:TensorDataType::FP32, shape:[1, 32, 160, 160], element_size
 
 namespace {
 
-struct Obj {
-  int id = 0;
-  float accu = 0.0;
-  cv::Rect bound;
-  cv::Mat mask;
-};
-
 int seg_ch = 32;
 int seg_w = 160, seg_h = 160;
 int net_w = 640, net_h = 640;
@@ -82,7 +75,8 @@ void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
 }
 
 void DecodeOutput(cv::Mat &output0, cv::Mat &output1, ImageInfo para,
-                  std::vector<Obj> &output, int class_cnt) {
+                  std::vector<modelzoo::Yolo11NSeg::ResultObj> &output,
+                  int class_cnt) {
   auto trans = para.trans;
   LOG_DEBUG("start decode output, trans:{}, {}, {}, {}", trans[0], trans[1],
             trans[2], trans[3]);
@@ -102,7 +96,7 @@ void DecodeOutput(cv::Mat &output0, cv::Mat &output1, ImageInfo para,
     if (max_socre >= accu_thresh) {
       masks.push_back(
           std::vector<float>(pdata + 4 + class_cnt, pdata + data_width));
-      
+
       float w = pdata[2] / para.trans[0];
       float h = pdata[3] / para.trans[1];
       int left = MAX(
@@ -120,33 +114,12 @@ void DecodeOutput(cv::Mat &output0, cv::Mat &output1, ImageInfo para,
   for (int i = 0; i < nms_result.size(); ++i) {
     int idx = nms_result[i];
     // boxes[idx] =
-        // boxes[idx] & cv::Rect(0, 0, para.raw_size.width, para.raw_size.height);
-    Obj result = {class_ids[idx], accus[idx], boxes[idx]};
+    // boxes[idx] & cv::Rect(0, 0, para.raw_size.width, para.raw_size.height);
+    modelzoo::Yolo11NSeg::ResultObj result = {class_ids[idx], accus[idx],
+                                              boxes[idx]};
     GetMask(cv::Mat(masks[idx]).t(), output1, para, boxes[idx], result.mask);
     output.push_back(result);
   }
-}
-
-void DrawResult(cv::Mat img, std::vector<Obj> &result,
-                std::vector<cv::Scalar> color) {
-  cv::Mat mask = img.clone();
-  for (int i = 0; i < result.size(); i++) {
-    int left, top;
-    left = result[i].bound.x;
-    top = result[i].bound.y;
-    int color_num = i;
-    rectangle(img, result[i].bound, color[result[i].id], 8);
-    if (result[i].mask.rows && result[i].mask.cols > 0) {
-      mask(result[i].bound).setTo(color[result[i].id], result[i].mask);
-    }
-    std::string label = std::format("{}:{:.2f}", result[i].id, result[i].accu);
-    putText(img, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 2,
-            color[result[i].id], 4);
-  }
-  addWeighted(img, 0.6, mask, 0.4, 0, img); // add mask to src
-  resize(img, img, cv::Size(640, 640));
-  cv::imshow("img", img);
-  cv::waitKey();
 }
 
 } // namespace
@@ -227,19 +200,30 @@ int Yolo11NSeg::Postprocess(Result &result) {
   std::vector<int> mask_sz = {1, (int)mask_shape[1], (int)mask_shape[2],
                               (int)mask_shape[3]};
   cv::Mat output1 = cv::Mat(mask_sz, CV_32F, output_1.p);
-  ImageInfo img_info = {cv::Size(640, 640), {1.0f/img_scales_, 1.0f/img_scales_, 0, 0}};
+  ImageInfo img_info = {cv::Size(640, 640),
+                        {1.0f / img_scales_, 1.0f / img_scales_, 0, 0}};
 
-  std::vector<Obj> result_temp;
-  DecodeOutput(output0, output1, img_info, result_temp, 80);
-  
-  std::string img_path = "modelzoo/yolo11n_seg/data/img/bus.jpg";
-  cv::Mat img = cv::imread(img_path);
-  DrawResult(img, result_temp, imgutils::GetRandomColor(80));
+  DecodeOutput(output0, output1, img_info, result, 80);
+  return 0;
+}
 
-  // inference::SaveTensorDataToFile(&output_0, "output0.npy");
-  // inference::SaveTensorDataToFile(&output_1, "output1.npy");
-
-  return -1;
+void Yolo11NSeg::DrawResult(cv::Mat &img, Result &result,
+                            std::vector<cv::Scalar> color) {
+  cv::Mat mask = img.clone();
+  for (int i = 0; i < result.size(); i++) {
+    int left, top;
+    left = result[i].bound.x;
+    top = result[i].bound.y;
+    int color_num = i;
+    rectangle(img, result[i].bound, color[result[i].id], 8);
+    if (result[i].mask.rows && result[i].mask.cols > 0) {
+      mask(result[i].bound).setTo(color[result[i].id], result[i].mask);
+    }
+    std::string label = std::format("{}:{:.2f}", result[i].id, result[i].accu);
+    putText(img, label, cv::Point(left, top), cv::FONT_HERSHEY_SIMPLEX, 2,
+            color[result[i].id], 4);
+  }
+  addWeighted(img, 0.6, mask, 0.4, 0, img); // add mask to src
 }
 
 } // namespace modelzoo

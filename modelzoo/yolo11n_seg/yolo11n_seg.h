@@ -1,8 +1,8 @@
 #pragma once
 
 #include "inference/inference.h"
-#include "modelzoo/common/detect_common.hpp"
-#include "modelzoo/common/segment_common.hpp"
+
+#include <opencv2/opencv.hpp>
 
 namespace inference {
 class OnnxRuntimeEngine;
@@ -12,12 +12,14 @@ namespace modelzoo {
 
 class Yolo11NSeg {
 public:
-  using Threshold = imgutils::Threshold;
-  struct Object {
-    imgutils::DetectBox box;
-    imgutils::MaskRegion mask;
+  struct ResultObj {
+    int id = 0;
+    float accu = 0.0;
+    cv::Rect bound;
+    cv::Mat mask;
   };
-  using Result = std::vector<Object>;
+
+  using Result = std::vector<ResultObj>;
 
   Yolo11NSeg();
   ~Yolo11NSeg();
@@ -29,6 +31,9 @@ public:
 
   int Warmup();
   int Segment(const cv::Mat &img, Result &result);
+
+  static void DrawResult(cv::Mat &img, std::vector<ResultObj> &result,
+                         std::vector<cv::Scalar> color);
 
 private:
   int Preprocess(const cv::Mat &img);

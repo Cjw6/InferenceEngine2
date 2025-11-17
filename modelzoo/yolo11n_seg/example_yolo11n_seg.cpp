@@ -62,6 +62,11 @@ int main(int argc, char **argv) {
   for (int i = 0; i < img_datas.size(); i++) {
     modelzoo::Yolo11NSeg::Result result;
     ret = yolov11n_seg.Segment(img_datas[i], result);
+    auto src_img = img_datas[i].clone();
+    modelzoo::Yolo11NSeg::DrawResult(src_img, result,
+                                     imgutils::GetRandomColor(80));
+    cv::imshow("result", src_img);
+    cv::waitKey(0);
     break;
   }
 }
