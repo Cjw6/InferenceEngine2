@@ -2,27 +2,10 @@
 
 ## how to build
 
-### activate conda env
-
 ```bash
 conda activate my_cpp_env
-
-```
-
-### build release
-```bash
-python ./tools/build_tool.py  release
-```
-
-### build debug
-
-```bash
-python ./tools/build_tool.py debug
-```
-
-### build release with debug_info
-```bash
-python ./tools/build_tool.py  relwithdebinfo
+python ./tools/build_tool2.py -c linux_cmake_debug
+python ./tools/build_tool2.py -c linux_build_debug -- --target all
 ```
 
 ## set env

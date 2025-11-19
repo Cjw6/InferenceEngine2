@@ -30,11 +30,6 @@ int seg_w = 160, seg_h = 160;
 int net_w = 640, net_h = 640;
 float accu_thresh = 0.25, mask_thresh = 0.5;
 
-// struct ImageInfo {
-//   cv::Size raw_size;
-//   cv::Vec4d trans;
-// };
-
 void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
              const modelzoo::Yolo11NSeg::ImageInfo &para, cv::Rect bound,
              cv::Mat &mast_out, std::vector<cv::Point> &mask_countours) {
@@ -78,18 +73,13 @@ void GetMask(const cv::Mat &mask_info, const cv::Mat &mask_data,
   cv::resize(dest, mask, cv::Size(width, height));
   mast_out = mask(bound - cv::Point(left, top)) > mask_thresh;
 
-  LOG_DEBUG("l:{} t:{} w:{} h:{}", left, top, width, height);
-  std::cout  << "mask_out.type()"<< mast_out.type() << std::endl;
-  LOG_DEBUG("mask_out.size(): {}", cpputils::ToString(mast_out.size()));
- 
   // 获得边界框
   cv::Mat real_img =
       cv::Mat::zeros(para.raw_size.height, para.raw_size.width, CV_8UC1);
 
   auto roi = real_img(bound);
   mast_out.copyTo(roi);
-  
-  // real_img(cv::Rect(left, top, width, height)).setTo(cv::Scalar(255), mast_out);
+
   std::vector<std::vector<cv::Point>> contours;
   cv::findContours(real_img, contours, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_SIMPLE);
