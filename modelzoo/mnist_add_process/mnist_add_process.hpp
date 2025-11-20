@@ -1,17 +1,16 @@
 #pragma once
 
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/assert.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/map.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/assert/assert.h>
 #include "modelzoo/common/img_common.hpp"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 
 namespace modelzoo {
 
-using ::cpputils::ToString;
-using ::cpputils::VectorToString;
+using ::cpptoolkit::ToString;
+using ::cpptoolkit::ToString;
 
 class MnistAddProcess {
 public:
@@ -52,18 +51,18 @@ public:
     auto i_desc = engine.GetInputTensorDescs();
     auto o_desc = engine.GetOutputTensorDescs();
 
-    // LOG_INFO("i_desc:\n{}", cpputils::MapToString(i_desc));
-    // LOG_INFO("o_desc:\n{}", cpputils::MapToString(o_desc));
+    // LOG_INFO("i_desc:\n{}", cpptoolkit::MapToString(i_desc));
+    // LOG_INFO("o_desc:\n{}", cpptoolkit::MapToString(o_desc));
 
     auto i_tensor = engine.GetInputTensors();
-    auto x_tensor = cpputils::MapGet(i_tensor, "x");
+    auto x_tensor = &i_tensor.at("x");
     if (!x_tensor) {
       THROW_RUNTIME_EXCEPTION("x_tensor is null");
     }
 
     CHECK_MSG(x_tensor->data_type == inference::kUint8,
               fmt::format("x_tensor data_type error!!!, x_tensor->data_type:{}",
-                          cpputils::ToString(x_tensor->data_type)));
+                          cpptoolkit::ToString(x_tensor->data_type)));
     memcpy(x_tensor->p, img.data, img.total());
 
     engine.Run();
@@ -78,11 +77,11 @@ public:
     // shape:[1], element_size:1}}
 
     auto o_tensor = engine.GetOutputTensors();
-    auto y_tensor = cpputils::MapGet(o_tensor, "y");
+    auto y_tensor = &o_tensor.at("y");
     if (!y_tensor) {
       THROW_RUNTIME_EXCEPTION("y_tensor is null");
     }
-    auto z_tensor = cpputils::MapGet(o_tensor, "z");
+    auto z_tensor = &o_tensor.at("z");
     if (!z_tensor) {
       THROW_RUNTIME_EXCEPTION("z_tensor is null");
     }
@@ -90,7 +89,7 @@ public:
     std::span<float> confidence((float *)y_tensor->p, 10);
     int64_t idx = *(int64_t *)(z_tensor->p);
 
-    // LOG_INFO("confidence:{}", cpputils::SpanToString(confidence));
+    // LOG_INFO("confidence:{}", cpptoolkit::SpanToString(confidence));
     // LOG_INFO("idx:{}", idx);
 
     if (idx < 0 || idx > 9) {

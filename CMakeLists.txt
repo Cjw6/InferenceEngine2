@@ -43,6 +43,7 @@ set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(INFERENCE_INC_DIRS ${ROOT_PATH})
 set(INFERENCE_LINK_DIRS)
 set(INFERENCE_DEP_LIBS)
+set(INFERENCE_COMPILE_DEFS)
 
 # options
 option(ENABLE_EXPERIMENT "use experiment" OFF)
@@ -51,11 +52,16 @@ option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
 option(ENABLE_STACKTRACE "use stacktrace exception" OFF)
 option(ENABLE_ASSERTS "use asserts" OFF)
 option(ENABLE_CUDA "use cuda" ON)
+option(ENABLE_XTENSOR "use onnxruntime" OFF)
 
 message(STATUS "ENABLE_EXPERIMENT: ${ENABLE_EXPERIMENT}")
 message(STATUS "ENABLE_STACKTRACE: ${ENABLE_STACKTRACE}")
 message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
 message(STATUS "ENABLE_CUDA: ${ENABLE_CUDA}")
+message(STATUS "ENABLE_XTENSOR: ${ENABLE_XTENSOR}")
+
+add_subdirectory(3rd/cpptoolkit)
+list(APPEND INFERENCE_INC_DIRS ${ROOT_PATH}/3rd/cpptoolkit)
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
@@ -74,10 +80,13 @@ endif()
 find_package(spdlog REQUIRED)
 list(APPEND INFERENCE_DEP_LIBS spdlog::spdlog)
 
-# xtensor
-find_package(xtl REQUIRED)
-find_package(xtensor REQUIRED)
-list(APPEND INFERENCE_DEP_LIBS xtensor)
+if(ENABLE_XTENSOR)
+    # xtensor
+    find_package(xtl REQUIRED)
+    find_package(xtensor REQUIRED)
+    list(APPEND INFERENCE_DEP_LIBS xtensor)
+    list(APPEND INFERENCE_COMPILE_DEFS "USE_XTENSOR") 
+endif()
 
 if(ENABLE_CUDA)
     find_package(CUDA)

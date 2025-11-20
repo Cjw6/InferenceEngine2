@@ -1,7 +1,7 @@
 #pragma once
 
 #include "inference/tensor/tensor.h"
-#include "inference/utils/exception.h"
+#include <cpptoolkit/exception/exception.h>
 #include <unordered_map>
 
 namespace inference {

@@ -1,10 +1,10 @@
 #include <gflags/gflags.h>
 
 #include "inference/inference.h"
-#include "inference/utils/assert.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/assert/assert.h>
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 #include "modelzoo/common/filesystem_common.hpp"
 #include "modelzoo/common/img_common.hpp"
 #include "modelzoo/yolov8n/yolov8n.hpp"
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   auto labels = imgutils::ReadLabelsFromFile(FLAGS_label_path);
 
-  auto img_paths = cpputils::GetImgDataPaths(FLAGS_img_path, ".jpg");
+  auto img_paths = cpptoolkit::GetImgDataPaths(FLAGS_img_path, ".jpg");
   std::vector<cv::Mat> img_datas;
   for (auto &f : img_paths) {
     cv::Mat img = cv::imread(f);

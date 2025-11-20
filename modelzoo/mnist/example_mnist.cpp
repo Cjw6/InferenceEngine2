@@ -1,8 +1,8 @@
 #include <gflags/gflags.h>
 
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 #include "modelzoo/common/img_common.hpp"
 
 DEFINE_string(img_path, "modelzoo/mnist/0001-0.jpg", "Path to the image file.");
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto labels = imgutils::ReadLabelsFromFile(FLAGS_label_path);
-  LOG_INFO("labels:{}", cpputils::VectorToString(labels));
+  LOG_INFO("labels:{}", cpptoolkit::ToString(labels));
 
   cv::Mat img = cv::imread(FLAGS_img_path);
   if (img.empty()) {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto intput_tensor = engine.GetInputTensors().at("x");
-  LOG_INFO("input tensor desc: {}", cpputils::ToString(intput_tensor));
+  // LOG_INFO("input tensor desc: {}", cpptoolkit::ToString(intput_tensor));
 
   imgutils::BlobNormalizeFromImage(img, intput_tensor.p, intput_tensor.data_type);
 
@@ -65,8 +65,8 @@ int main(int argc, char *argv[]) {
   for (const auto &name : output_names) {
     LOG_INFO("output name: {}", name);
   }
-  std::cout << "input tensor shape: "
-            << cpputils::VectorToString(intput_tensor.shape) << std::endl;
+  // std::cout << "input tensor shape: "
+            // << cpptoolkit::ToString(intput_tensor.shape) << std::endl;
 
   ret = engine.Run();
   if (ret != 0) {
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   }
 
   auto output_tensor_ = engine.GetOutputTensors().at("linear_2");
-  LOG_INFO("output tensor desc: {}", cpputils::ToString(output_tensor_));
+  // LOG_INFO("output tensor desc: {}", cpptoolkit::ToString(output_tensor_));
 
   auto result = imgutils::Softmax(output_tensor_.p, output_tensor_.mem_size,
                                    output_tensor_.data_type);

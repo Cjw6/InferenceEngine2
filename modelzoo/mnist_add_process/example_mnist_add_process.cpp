@@ -1,6 +1,5 @@
-#include "inference/utils/backtrace.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
 #include "modelzoo/common/filesystem_common.hpp"
 #include "modelzoo/common/img_common.hpp"
 #include "modelzoo/mnist_add_process/mnist_add_process.hpp"
@@ -34,7 +33,7 @@ void ClassifyOneImage() {
     LOG_INFO("idx: {}, confidence: {}", idx, confidence);
   }
   CPP_UTILS_CATCH(const std::exception &e) {
-    cpputils::PrettyPrintException(e);
+    cpptoolkit::PrettyPrintException(e);
   }
 }
 
@@ -47,8 +46,8 @@ void ClassifyDir() {
 
     LogInit();
 
-    auto img_paths = cpputils::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
-    LOG_INFO("img_paths:{}", cpputils::VectorToString(img_paths));
+    auto img_paths = cpptoolkit::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
+    LOG_INFO("img_paths:{}", cpptoolkit::ToString(img_paths));
 
     std::vector<cv::Mat> imgs;
     for (auto &f : img_paths) {
@@ -84,7 +83,7 @@ void ClassifyDir() {
     }
   }
   CPP_UTILS_CATCH(const std::exception &e) {
-    cpputils::PrettyPrintException(e);
+    cpptoolkit::PrettyPrintException(e);
   }
 }
 

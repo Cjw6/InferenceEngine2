@@ -1,6 +1,6 @@
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/elapse_time.hpp"
-#include "inference/utils/log.h"
+#include <cpptoolkit/time/elapse_time.hpp>
+#include <cpptoolkit/log/log.h>
 #include "modelzoo/common/img_common.hpp"
 #include <gtest/gtest.h>
 
@@ -21,7 +21,7 @@ void RunYoloV8Model(const std::string &model_path,
   int ret = engine.Init(params);
   ASSERT_TRUE(ret == 0) << "Failed to init engine: " << ret;
 
-  cpputils::ElapseTime elapes_time;
+  cpptoolkit::ElapseTime elapes_time;
 
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;

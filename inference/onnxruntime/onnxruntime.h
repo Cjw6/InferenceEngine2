@@ -8,7 +8,8 @@
 #include "inference/inference.h"
 #include "inference/inference_engine.h"
 #include "inference/tensor/tensor.h"
-#include "inference/utils/construct.h"
+
+#include <cpptoolkit/construct/construct.h>
 
 namespace inference {
 
@@ -19,8 +20,8 @@ public:
   OnnxRuntimeEngine();
   virtual ~OnnxRuntimeEngine();
 
-  NON_COPY_CONSTRUCT(OnnxRuntimeEngine);
-  NON_MOVE_CONSTRUCT(OnnxRuntimeEngine);
+  CPP_TK_NON_COPY_CONSTRUCT(OnnxRuntimeEngine);
+  CPP_TK_NON_MOVE_CONSTRUCT(OnnxRuntimeEngine);
 
   int Init(const InferenceParams &params = {});
   void Deinit();

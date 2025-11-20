@@ -16,11 +16,10 @@ TensorDesc(data_type:TensorDataType::FP32, shape:[1, 32, 160, 160], element_size
 #include "modelzoo/yolo11n_seg/yolo11n_seg.h"
 #include "inference/onnxruntime/onnxruntime.h"
 #include "inference/tensor/tensor_helper.h"
-#include "inference/utils/assert.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/map.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/assert/assert.h>
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 #include "modelzoo/common/img_common.hpp"
 
 namespace {

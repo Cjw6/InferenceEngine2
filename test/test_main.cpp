@@ -1,4 +1,4 @@
-#include "inference/utils/log.h"
+#include <cpptoolkit/log/log.h>
 #include <gtest/gtest.h>
 
 int main(int argc, char *argv[]) {

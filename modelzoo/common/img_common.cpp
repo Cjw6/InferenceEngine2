@@ -1,6 +1,6 @@
 #include "img_common.hpp"
 
-#include "inference/utils/half.hpp"
+#include <cpptoolkit/fp16/half.hpp>
 
 namespace imgutils {
 

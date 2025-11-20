@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/strings/to_string.h>
 #include <ostream>
 #include <vector>
 
@@ -18,7 +18,7 @@ inline std::ostream &operator<<(std::ostream &s, const MaskPoints &mask) {
 }
 
 inline std::ostream &operator<<(std::ostream &s, const MaskRegion &mask) {
-  return s << cpputils::VectorToString(mask);
+  return s << cpptoolkit::ToString(mask);
 }
 
 } // namespace imgutils

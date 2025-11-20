@@ -1,14 +1,14 @@
 #pragma once
 
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 #include <filesystem>
 #include <string>
 #include <vector>
 
 namespace fs = std::filesystem;
 
-namespace cpputils {
+namespace cpptoolkit {
 
 /*
 Get all files with the given extension in the given directory.
@@ -42,7 +42,7 @@ inline std::vector<std::string> GetImgDataPaths(const std::string &img_path,
     }
   }
   if (fs::is_directory(img_path)) {
-    auto files = cpputils::GetAllFilesWithExt(img_path.c_str(), ".jpg");
+    auto files = cpptoolkit::GetAllFilesWithExt(img_path.c_str(), ".jpg");
     for (auto &file : files) {
       img_paths.push_back(file);
     }
@@ -50,4 +50,4 @@ inline std::vector<std::string> GetImgDataPaths(const std::string &img_path,
   return img_paths;
 }
 
-} // namespace cpputils
+} // namespace cpptoolkit

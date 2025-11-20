@@ -1,6 +1,6 @@
 #include "modelzoo/yolo11n_obb/yolo11n_obb.h"
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/log.h"
+#include <cpptoolkit/log/log.h>
 #include "modelzoo/common/img_common.hpp"
 
 #define M_PI 3.14159265358979323846

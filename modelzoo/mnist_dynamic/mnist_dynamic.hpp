@@ -1,15 +1,15 @@
 #pragma once
 
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 #include "modelzoo/common/img_common.hpp"
 
 namespace modelzoo {
 
-using ::cpputils::ToString;
-using ::cpputils::VectorToString;
+using ::cpptoolkit::ToString;
+using ::cpptoolkit::ToString;
 
 class MnistDynamic {
 public:

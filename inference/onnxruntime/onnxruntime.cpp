@@ -2,9 +2,9 @@
 
 #include "inference/onnxruntime/onnxruntime_convert.h"
 #include "inference/tensor/buffer.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 
 #include <onnxruntime_cxx_api.h>
 
@@ -27,12 +27,12 @@ std::ostream &operator<<(std::ostream &s,
   auto symbolic_dims = info.GetSymbolicDimensions();
   auto shape = info.GetShape();
 
-  s << fmt::format("Ort::ConstTensorTypeAndShapeInfo(elem_type {}, "
-                   "elem_count {}, dims_count {}, "
-                   "symbolic_dims {}, shape {})",
-                   (int)elem_type, elem_count, dims_count,
-                   cpputils::VectorToString(symbolic_dims),
-                   cpputils::VectorToString(shape));
+  // s << fmt::format("Ort::ConstTensorTypeAndShapeInfo(elem_type {}, "
+  //                  "elem_count {}, dims_count {}, "
+  //                  "symbolic_dims {}, shape {})",
+  //                  (int)elem_type, elem_count, dims_count,
+  //                  cpptoolkit::ToString(symbolic_dims),
+  //                  cpptoolkit::ToString(shape));
   return s;
 }
 
@@ -237,7 +237,7 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
       auto input_type_info = session_->GetInputTypeInfo(i);
 
       // LOG_DEBUG("input {}: {}: {}", i, input_name.get(),
-      // cpputils::ToString(input_type_info.GetTensorTypeAndShapeInfo()));
+      // cpptoolkit::ToString(input_type_info.GetTensorTypeAndShapeInfo()));
 
       size_t mem_alloc_size = 0;
       auto tensor_desc = OrtTypeInfoToTensorDesc(input_type_info);
@@ -277,7 +277,7 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
       auto output_type_info = session_->GetOutputTypeInfo(i);
 
       // LOG_DEBUG("output {}: {}: {}", i, output_name.get(),
-      //           cpputils::ToString(output_type_info.GetTensorTypeAndShapeInfo()));
+      //           cpptoolkit::ToString(output_type_info.GetTensorTypeAndShapeInfo()));
 
       auto tensor_desc = OrtTypeInfoToTensorDesc(output_type_info);
 
@@ -385,7 +385,7 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
       if (tensor_desc.IsDynamic()) {
         shape[0] = batch_size;
       }
-      // LOG_DEBUG("shape:{}", cpputils::VectorToString(shape));
+      // LOG_DEBUG("shape:{}", cpptoolkit::ToString(shape));
       auto ort_tensor = CreateOrtTensorCPU(
           tensor_desc.data_type, tensor_buffer->host(),
           tensor_desc.element_size, shape.data(), shape.size());
@@ -401,7 +401,7 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
       if (tensor_desc.IsDynamic()) {
         shape[0] = batch_size;
       }
-      LOG_DEBUG("shape:{}", cpputils::VectorToString(shape));
+      // LOG_DEBUG("shape:{}", cpptoolkit::ToString(shape));
 
       auto ort_tensor = CreateOrtTensorCPU(
           tensor_desc.data_type, tensor_buffer->host(),
@@ -447,17 +447,17 @@ std::string OnnxRuntimeEngineImpl::DumpModelInfo() const {
   std::string model_info = fmt::format("model info:\n");
   model_info += fmt::format("dynamic model: {}\n", dynamic_model_);
   model_info += fmt::format("input nums: {}\n", input_node_names_.size());
-  for (auto &i_names : input_node_names_) {
-    model_info +=
-        fmt::format("input: {}\n{}\n", i_names,
-                    cpputils::ToString(input_tensor_descs_.at(i_names)));
-  }
-  model_info += fmt::format("output nums: {}\n", output_node_names_.size());
-  for (auto &o_names : output_node_names_) {
-    model_info +=
-        fmt::format("output: {}\n{}\n", o_names,
-                    cpputils::ToString(output_tensor_descs_.at(o_names)));
-  }
+  // for (auto &i_names : input_node_names_) {
+  //   model_info +=
+  //       fmt::format("input: {}\n{}\n", i_names,
+  //                   cpptoolkit::ToString(input_tensor_descs_.at(i_names)));
+  // }
+  // model_info += fmt::format("output nums: {}\n", output_node_names_.size());
+  // for (auto &o_names : output_node_names_) {
+  //   model_info +=
+  //       fmt::format("output: {}\n{}\n", o_names,
+  //                   cpptoolkit::ToString(output_tensor_descs_.at(o_names)));
+  // }
   return model_info;
 }
 

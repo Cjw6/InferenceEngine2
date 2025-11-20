@@ -1,8 +1,8 @@
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/pystring.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/pystring.h>
+#include <cpptoolkit/strings/to_string.h>
 #include "modelzoo/common/img_common.hpp"
 #include <gtest/gtest.h>
 
@@ -38,8 +38,7 @@ inline std::vector<fs::path> GetAllFilesWithExt(const char *path,
 
 // namespace fs = std::filesystem;
 
-using cpputils::ToString;
-using cpputils::VectorToString;
+using cpptoolkit::ToString;
 
 namespace {
 
@@ -88,7 +87,7 @@ void RunMnistModel(const std::string &model_path,
   inference::TensorShape shape = {1, 1, 28, 28};
   ASSERT_EQ(input_tensors.at("input").shape, shape)
       << "Invalid input shape: "
-      << VectorToString(input_tensors.at("input").shape);
+      << ToString(input_tensors.at("input").shape);
 
   for (int i = 0; i < batch_size; i++) {
     auto p = input_tensors.at("input").p_arr[i];
@@ -205,7 +204,7 @@ int GetResultFromFilename(const fs::path &filename) {
 TestImgSampleArr PrepareTestImgSamples() {
   auto files = GetAllFilesWithExt(data_dir.c_str(), ".jpg");
   LOG_INFO("files size: {}", files.size());
-  LOG_INFO("files: {}", VectorToString(files));
+  LOG_INFO("files: {}", ToString(files));
 
   TestImgSampleArr samples;
 

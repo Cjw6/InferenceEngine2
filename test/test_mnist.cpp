@@ -1,5 +1,5 @@
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/log.h"
+#include <cpptoolkit/log/log.h>
 #include "modelzoo/common/img_common.hpp"
 #include <gtest/gtest.h>
 

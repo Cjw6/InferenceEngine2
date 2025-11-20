@@ -1,6 +1,7 @@
 #include "inference/tensor/tensor.h"
 #include "inference/tensor/tensor_helper.h"
-#include "inference/utils/log.h"
+#include <cpptoolkit/log/log.h>
+
 
 using namespace inference;
 

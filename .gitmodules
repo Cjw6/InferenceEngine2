@@ -1,0 +1,3 @@
+[submodule "3rd/cpptoolkit"]
+	path = 3rd/cpptoolkit
+	url = https://github.com/Cjw6/CppToolKit

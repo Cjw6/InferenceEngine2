@@ -1,12 +1,16 @@
 #include "inference/tensor/tensor_helper.h"
 #include "inference/tensor/tensor.h"
-#include "inference/utils/assert.h"
-#include "inference/utils/half.hpp"
-#include "inference/utils/log.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/assert/assert.h>
+#include <cpptoolkit/fp16/half.hpp>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
+
+#ifdef USE_XTENSOR
 
 #include <xtensor/containers/xarray.hpp>
 #include <xtensor/io/xnpy.hpp>
+
+#endif
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -15,6 +19,8 @@ namespace inference {
 
 int SaveTensorDataToFile(TensorDataPointer *data,
                          const std::string &file_path) {
+#ifdef USE_XTENSOR
+
   if (!data) {
     LOG_ERROR("buffer is nullptr");
     return -1;
@@ -29,14 +35,17 @@ int SaveTensorDataToFile(TensorDataPointer *data,
     auto t = xt::adapt((float *)data->p, data->shape);
     xt::dump_npy(file_path, t);
   } else {
-    LOG_ERROR("unsupported data type {}", cpputils::ToString(data->data_type));
+    LOG_ERROR("unsupported data type {}", cpptoolkit::ToString(data->data_type));
     return -1;
   }
-
   return 0;
+#else
+  return -1;
+#endif
 }
 
 TensorData LoadTensorDataFromFile(const std::string &file_path) {
+#ifdef USE_XTENSOR
   xt::xarray<float> float_array{xt::load_npy<float>(file_path)};
   auto shape = float_array.shape();
 
@@ -56,6 +65,9 @@ TensorData LoadTensorDataFromFile(const std::string &file_path) {
   data.pointer.mem_size = mem_size;
   data.data = std::move(t_data);
   return data;
+#else
+  return {};
+#endif
 }
 
 } // namespace inference

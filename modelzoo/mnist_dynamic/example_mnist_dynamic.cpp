@@ -1,7 +1,6 @@
 #include "modelzoo/common/filesystem_common.hpp"
 #include "modelzoo/common/img_common.hpp"
 #include "modelzoo/mnist_dynamic/mnist_dynamic.hpp"
-#include "inference/utils/backtrace.h"
 
 int main(int argc, char **argv) {
   LogInit();
@@ -13,8 +12,8 @@ int main(int argc, char **argv) {
   const std::string label_file = "modelzoo/mnist_dynamic/data/labels.txt";
 
   auto labels = imgutils::ReadLabelsFromFile(label_file);
-  auto img_paths = cpputils::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
-  LOG_INFO("img_paths:{}", cpputils::VectorToString(img_paths));
+  auto img_paths = cpptoolkit::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
+  LOG_INFO("img_paths:{}", cpptoolkit::ToString(img_paths));
 
   std::vector<cv::Mat> imgs;
   for (auto &f : img_paths) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "inference/utils/log.h"
+#include <cpptoolkit/log/log.h>
 #include <opencv2/opencv.hpp>
 
 namespace imgutils {

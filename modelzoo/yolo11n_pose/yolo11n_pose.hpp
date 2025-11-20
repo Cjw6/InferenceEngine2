@@ -1,11 +1,10 @@
 #pragma once
 
 #include "inference/onnxruntime/onnxruntime.h"
-#include "inference/utils/assert.h"
-#include "inference/utils/exception.h"
-#include "inference/utils/log.h"
-#include "inference/utils/map.h"
-#include "inference/utils/to_string.h"
+#include <cpptoolkit/assert/assert.h>
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
+#include <cpptoolkit/strings/to_string.h>
 
 #include "modelzoo/common/detect_common.hpp"
 #include "modelzoo/common/img_common.hpp"

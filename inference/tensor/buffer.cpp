@@ -1,5 +1,6 @@
 #include "buffer.h"
-#include "inference/utils/assert.h"
+#include <cpptoolkit/cuda/cuda_error.hpp>
+#include <cpptoolkit/assert/assert.h>
 
 namespace inference {
 
