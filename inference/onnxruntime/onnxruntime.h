@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "inference/inference.h"
+#include "inference/inference_engine.h"
 #include "inference/tensor/tensor.h"
 #include "inference/utils/construct.h"
 
@@ -13,10 +14,10 @@ namespace inference {
 
 class OnnxRuntimeEngineImpl;
 
-class OnnxRuntimeEngine {
+class OnnxRuntimeEngine : public InferenceEngine {
 public:
   OnnxRuntimeEngine();
-  ~OnnxRuntimeEngine();
+  virtual ~OnnxRuntimeEngine();
 
   NON_COPY_CONSTRUCT(OnnxRuntimeEngine);
   NON_MOVE_CONSTRUCT(OnnxRuntimeEngine);
