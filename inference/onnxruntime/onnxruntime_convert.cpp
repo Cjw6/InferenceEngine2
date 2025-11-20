@@ -17,9 +17,8 @@ OnnxTensorDataTypeToTensorDataType(ONNXTensorElementDataType onnx_data_type) {
   case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:
     return kInt64;
   default:
-    // throw std::runtime_error("Unsupported ONNX tensor element data type" +
-                            //  cpptoolkit::ToString(onnx_data_type));
-    throw std::runtime_error("Unsupported ONNX tensor element data type");
+    throw std::runtime_error("Unsupported ONNX tensor element data type" +
+                             cpptoolkit::ToString(onnx_data_type));
   }
 }
 

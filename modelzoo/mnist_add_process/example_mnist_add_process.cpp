@@ -1,11 +1,11 @@
-#include <cpptoolkit/exception/exception.h>
-#include <cpptoolkit/log/log.h>
 #include "modelzoo/common/filesystem_common.hpp"
 #include "modelzoo/common/img_common.hpp"
 #include "modelzoo/mnist_add_process/mnist_add_process.hpp"
+#include <cpptoolkit/exception/exception.h>
+#include <cpptoolkit/log/log.h>
 
 void ClassifyOneImage() {
-  CPP_UTILS_TRY {
+  try {
     const std::string model_path =
         "modelzoo/mnist_add_process/data/mnist_add_process.onnx";
     const std::string img_path = "modelzoo/mnist_add_process/data/0001-0.jpg";
@@ -31,14 +31,13 @@ void ClassifyOneImage() {
     cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
     auto [idx, confidence] = mnist.Classify(img);
     LOG_INFO("idx: {}, confidence: {}", idx, confidence);
-  }
-  CPP_UTILS_CATCH(const std::exception &e) {
-    cpptoolkit::PrettyPrintException(e);
+  } catch (const std::exception &e) {
+    LOG_ERROR("exception: {}", e.what());
   }
 }
 
 void ClassifyDir() {
-  CPP_UTILS_TRY {
+  try {
     const std::string model_path =
         "modelzoo/mnist_add_process/data/mnist_add_process.onnx";
     const std::string jpg_dir = "modelzoo/mnist_dynamic/data";
@@ -81,9 +80,9 @@ void ClassifyDir() {
       LOG_INFO("img_path: {}, idx: {}, confidence: {}", img_paths[i].string(),
                idx, confidece);
     }
-  }
-  CPP_UTILS_CATCH(const std::exception &e) {
-    cpptoolkit::PrettyPrintException(e);
+  } catch (const std::exception &e) {
+    LOG_ERROR("exception: {}", e.what());
+    // cpptoolkit::PrettyPrintException(e);
   }
 }
 

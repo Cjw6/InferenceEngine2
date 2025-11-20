@@ -44,7 +44,7 @@ std::ostream &operator<<(std::ostream &s, const TensorDataType &data_type) {
 
 std::ostream &operator<<(std::ostream &s, const TensorDesc &tensor_desc) {
   return s << "TensorDesc(" << "data_type:" << tensor_desc.data_type
-          //  << ", shape:" << cpptoolkit::ToString(tensor_desc.shape)
+           << ", shape:" << cpptoolkit::ToString(tensor_desc.shape)
            << ", element_size:" << tensor_desc.element_size << ")";
 }
 
@@ -52,7 +52,7 @@ std::ostream &operator<<(std::ostream &s,
                          const TensorDataPointer &tensor_pointer) {
   return s << "TensorDataPointer(" << "p:" << tensor_pointer.p << ", "
            << "size:" << tensor_pointer.mem_size
-          //  << ", shape:" << cpptoolkit::ToString(tensor_pointer.shape)
+           << ", shape:" << cpptoolkit::ToString(tensor_pointer.shape)
            << ", data_type:" << tensor_pointer.data_type
            << ", device_type:" << tensor_pointer.device_type << ")";
 }

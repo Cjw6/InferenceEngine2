@@ -12,8 +12,6 @@ namespace inference {
 
 namespace {
 
-// using ParamsTable = std::unordered_map<std::string, std::string>;
-
 bool IsDynamic(const std::vector<int64_t> &shape) {
   return std::any_of(shape.begin(), shape.end(),
                      [](int64_t dim) { return dim == -1; });
@@ -27,12 +25,12 @@ std::ostream &operator<<(std::ostream &s,
   auto symbolic_dims = info.GetSymbolicDimensions();
   auto shape = info.GetShape();
 
-  // s << fmt::format("Ort::ConstTensorTypeAndShapeInfo(elem_type {}, "
-  //                  "elem_count {}, dims_count {}, "
-  //                  "symbolic_dims {}, shape {})",
-  //                  (int)elem_type, elem_count, dims_count,
-  //                  cpptoolkit::ToString(symbolic_dims),
-  //                  cpptoolkit::ToString(shape));
+  s << fmt::format("Ort::ConstTensorTypeAndShapeInfo(elem_type {}, "
+                   "elem_count {}, dims_count {}, "
+                   "symbolic_dims {}, shape {})",
+                   (int)elem_type, elem_count, dims_count,
+                   cpptoolkit::ToString(symbolic_dims),
+                   cpptoolkit::ToString(shape));
   return s;
 }
 
@@ -236,9 +234,6 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
       auto input_name = session_->GetInputNameAllocated(i, allocator_);
       auto input_type_info = session_->GetInputTypeInfo(i);
 
-      // LOG_DEBUG("input {}: {}: {}", i, input_name.get(),
-      // cpptoolkit::ToString(input_type_info.GetTensorTypeAndShapeInfo()));
-
       size_t mem_alloc_size = 0;
       auto tensor_desc = OrtTypeInfoToTensorDesc(input_type_info);
       if (tensor_desc.IsDynamic()) {
@@ -275,9 +270,6 @@ int OnnxRuntimeEngineImpl::Init(const InferenceParams &params) {
     for (int i = 0; i < output_nums; ++i) {
       auto output_name = session_->GetOutputNameAllocated(i, allocator_);
       auto output_type_info = session_->GetOutputTypeInfo(i);
-
-      // LOG_DEBUG("output {}: {}: {}", i, output_name.get(),
-      //           cpptoolkit::ToString(output_type_info.GetTensorTypeAndShapeInfo()));
 
       auto tensor_desc = OrtTypeInfoToTensorDesc(output_type_info);
 
@@ -385,7 +377,7 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
       if (tensor_desc.IsDynamic()) {
         shape[0] = batch_size;
       }
-      // LOG_DEBUG("shape:{}", cpptoolkit::ToString(shape));
+
       auto ort_tensor = CreateOrtTensorCPU(
           tensor_desc.data_type, tensor_buffer->host(),
           tensor_desc.element_size, shape.data(), shape.size());
@@ -401,7 +393,6 @@ int OnnxRuntimeEngineImpl::RunDynamicModel(int batch_size) {
       if (tensor_desc.IsDynamic()) {
         shape[0] = batch_size;
       }
-      // LOG_DEBUG("shape:{}", cpptoolkit::ToString(shape));
 
       auto ort_tensor = CreateOrtTensorCPU(
           tensor_desc.data_type, tensor_buffer->host(),
@@ -447,17 +438,17 @@ std::string OnnxRuntimeEngineImpl::DumpModelInfo() const {
   std::string model_info = fmt::format("model info:\n");
   model_info += fmt::format("dynamic model: {}\n", dynamic_model_);
   model_info += fmt::format("input nums: {}\n", input_node_names_.size());
-  // for (auto &i_names : input_node_names_) {
-  //   model_info +=
-  //       fmt::format("input: {}\n{}\n", i_names,
-  //                   cpptoolkit::ToString(input_tensor_descs_.at(i_names)));
-  // }
-  // model_info += fmt::format("output nums: {}\n", output_node_names_.size());
-  // for (auto &o_names : output_node_names_) {
-  //   model_info +=
-  //       fmt::format("output: {}\n{}\n", o_names,
-  //                   cpptoolkit::ToString(output_tensor_descs_.at(o_names)));
-  // }
+  for (auto &i_names : input_node_names_) {
+    model_info +=
+        fmt::format("input: {}\n{}\n", i_names,
+                    cpptoolkit::ToString(input_tensor_descs_.at(i_names)));
+  }
+  model_info += fmt::format("output nums: {}\n", output_node_names_.size());
+  for (auto &o_names : output_node_names_) {
+    model_info +=
+        fmt::format("output: {}\n{}\n", o_names,
+                    cpptoolkit::ToString(output_tensor_descs_.at(o_names)));
+  }
   return model_info;
 }
 

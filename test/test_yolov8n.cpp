@@ -21,20 +21,20 @@ void RunYoloV8Model(const std::string &model_path,
   int ret = engine.Init(params);
   ASSERT_TRUE(ret == 0) << "Failed to init engine: " << ret;
 
-  cpptoolkit::ElapseTime elapes_time;
+  cpptoolkit::ElapsedTime elapse_time;;
 
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
-  LOG_INFO("cost time 1 : {}ms", elapes_time.DurationMs());
-  elapes_time.Restart();
+  LOG_INFO("cost time 1 : {}ms", elapse_time.DurationMs());
+  elapse_time.Restart();
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
-  LOG_INFO("cost time 2 : {}ms", elapes_time.DurationMs());
-  elapes_time.Restart();
+  LOG_INFO("cost time 2 : {}ms", elapse_time.DurationMs());
+  elapse_time.Restart();
   ret = engine.Run();
   ASSERT_TRUE(ret == 0) << "Failed to run engine: " << ret;
-  LOG_INFO("cost time 3 : {}ms", elapes_time.DurationMs());
-  elapes_time.Restart();
+  LOG_INFO("cost time 3 : {}ms", elapse_time.DurationMs());
+  elapse_time.Restart();
 }
 } // namespace
 
