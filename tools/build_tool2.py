@@ -45,6 +45,7 @@ def config_map():
             "-DENABLE_STACKTRACE=ON",
             "-DENABLE_ASSERTS=ON",
             "-DONNXRUNTIME_DIR=/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
+            "-DCUDA_PATH=/usr/local/cuda"
         ],
         "linux_build_debug": [
             "cmake",
