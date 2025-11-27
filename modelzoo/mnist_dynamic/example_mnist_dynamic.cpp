@@ -3,7 +3,7 @@
 #include "modelzoo/mnist_dynamic/mnist_dynamic.hpp"
 
 int main(int argc, char **argv) {
-  LogInit();
+  cpptoolkit::LogInit();
 
   const std::string model_path =
       "modelzoo/mnist_dynamic/data/mnist_dynamic.onnx";

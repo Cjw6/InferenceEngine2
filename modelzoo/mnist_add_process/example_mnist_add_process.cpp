@@ -10,7 +10,7 @@ void ClassifyOneImage() {
         "modelzoo/mnist_add_process/data/mnist_add_process.onnx";
     const std::string img_path = "modelzoo/mnist_add_process/data/0001-0.jpg";
 
-    LogInit();
+    cpptoolkit::LogInit();
 
     auto params = inference::GetDefaultOnnxRuntimeEngineParams();
     params.model_path = model_path;
@@ -43,7 +43,7 @@ void ClassifyDir() {
     const std::string jpg_dir = "modelzoo/mnist_dynamic/data";
     const std::string jpg_ext = ".jpg";
 
-    LogInit();
+    cpptoolkit::LogInit();
 
     auto img_paths = cpptoolkit::GetAllFilesWithExt(jpg_dir.c_str(), jpg_ext);
     LOG_INFO("img_paths:{}", cpptoolkit::ToString(img_paths));

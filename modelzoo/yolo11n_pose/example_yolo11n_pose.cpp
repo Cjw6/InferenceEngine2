@@ -26,7 +26,7 @@ DEFINE_string(label_path, "modelzoo/yolo11n_pose/data/labels.txt",
               "label path");
 
 int main(int argc, char **argv) {
-  LogInit();
+  cpptoolkit::LogInit();
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   LOG_INFO("img_path: {}", FLAGS_img_path);
   LOG_INFO("model_path: {}", FLAGS_model_path);

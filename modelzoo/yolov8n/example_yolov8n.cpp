@@ -14,7 +14,7 @@ DEFINE_string(model_path, "modelzoo/yolov8n/data/yolov8n.onnx", "model path");
 DEFINE_string(label_path, "modelzoo/yolov8n/data/labels.txt", "label path");
 
 int main(int argc, char **argv) {
-  LogInit();
+  cpptoolkit::LogInit();
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   LOG_INFO("img_path: {}", FLAGS_img_path);
   LOG_INFO("model_path: {}", FLAGS_model_path);

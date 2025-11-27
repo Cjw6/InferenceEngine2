@@ -8,6 +8,7 @@ example：
 import argparse
 import subprocess
 import os
+import time
 
 
 class TermColors:
@@ -45,7 +46,8 @@ def config_map():
             "-DENABLE_STACKTRACE=ON",
             "-DENABLE_ASSERTS=ON",
             "-DONNXRUNTIME_DIR=/home/cjw/lib/onnxruntime-linux-x64-gpu-1.23.1",
-            "-DCUDA_PATH=/usr/local/cuda"
+            "-DCUDA_PATH=/usr/local/cuda",
+            "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
         ],
         "linux_build_debug": [
             "cmake",
@@ -57,13 +59,16 @@ def config_map():
 
 
 def run_process(cmd_args: list[str]):
+    start_time = time.time()
     print(f"{TermColors.BLUE}run cmd: {cmd_args}{TermColors.END}")
     result = subprocess.run(cmd_args, cwd=os.getcwd(), text=True, check=False)
     if result.returncode != 0:
-        tips = f"{TermColors.RED}run failed!!! {result.returncode=}{TermColors.END}"
+        tips = f"{TermColors.RED}run failed!!! {cmd_args=}, {result.returncode=} cost_time:{time.time() - start_time:.4f}s{TermColors.END}"
         raise RuntimeError(tips)
 
-    print(f"{TermColors.GREEN}run success!!!{TermColors.END}")
+    print(
+        f"{TermColors.GREEN}run success!!! {cmd_args=}, cost_time:{time.time() - start_time:.4f}s{TermColors.END}"
+    )
 
 
 if __name__ == "__main__":

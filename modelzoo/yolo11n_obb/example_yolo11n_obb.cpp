@@ -15,7 +15,7 @@ DEFINE_string(model_path, "modelzoo/yolo11n_obb/data/yolo11n-obb.onnx",
 DEFINE_int32(class_cnt, 15, "class count");
 
 int main(int argc, char **argv) {
-  LogInit();
+  cpptoolkit::LogInit();
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   LOG_INFO("img_path: {}", FLAGS_img_path);
   LOG_INFO("model_path: {}", FLAGS_model_path);

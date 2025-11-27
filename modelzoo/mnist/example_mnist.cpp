@@ -28,7 +28,7 @@ inference::InferenceParams GetParams() {
 
 int main(int argc, char *argv[]) {
   ::google::ParseCommandLineFlags(&argc, &argv, true);
-  LogInit();
+  cpptoolkit::LogInit();
   LOG_INFO("use model_path: {}", FLAGS_model_path);
   LOG_INFO("use img_path: {}", FLAGS_img_path);
 
