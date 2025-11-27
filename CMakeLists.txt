@@ -12,13 +12,6 @@ else()
     message("CMAKE_BUILD_TYPE is set to ${CMAKE_BUILD_TYPE}")
 endif()
 
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    string(REGEX REPLACE "-O[0-9s]?" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    string(REGEX REPLACE "-Ofast" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-endif()
-
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_compile_options("/utf-8")
@@ -46,7 +39,6 @@ set(INFERENCE_DEP_LIBS)
 set(INFERENCE_COMPILE_DEFS)
 
 # options
-option(ENABLE_EXPERIMENT "use experiment" OFF)
 # 使用cuda后应该禁用 address sanitize, 否则会发生错误，只对主机代码检查内存错误
 option(ENABLE_ADDRESS_SANITIZER "use address sanitizer" OFF)
 option(ENABLE_STACKTRACE "use stacktrace exception" OFF)
@@ -54,11 +46,23 @@ option(ENABLE_ASSERTS "use asserts" OFF)
 option(ENABLE_CUDA "use cuda" ON)
 option(ENABLE_XTENSOR "use onnxruntime" OFF)
 
-message(STATUS "ENABLE_EXPERIMENT: ${ENABLE_EXPERIMENT}")
+# inference backend
+option(ENABLE_ONNXRUNTIME "use onnxruntime" OFF)
+option(ENABLE_TENSORRT "use tensorrt" OFF)
+
+option(ENABLE_EXPERIMENT "use experiment" OFF)
+option(ENABLE_MODEL_ZOO "use model zoo" OFF)
+option(ENABLE_TEST "use test" OFF)
+
 message(STATUS "ENABLE_STACKTRACE: ${ENABLE_STACKTRACE}")
 message(STATUS "ENABLE_ASSERTS: ${ENABLE_ASSERTS}")
 message(STATUS "ENABLE_CUDA: ${ENABLE_CUDA}")
 message(STATUS "ENABLE_XTENSOR: ${ENABLE_XTENSOR}")
+message(STATUS "ENABLE_ONNXRUNTIME: ${ENABLE_ONNXRUNTIME}")
+message(STATUS "ENABLE_TENSORRT: ${ENABLE_TENSORRT}")
+message(STATUS "ENABLE_EXPERIMENT: ${ENABLE_EXPERIMENT}")
+message(STATUS "ENABLE_MODEL_ZOO: ${ENABLE_MODEL_ZOO}")
+message(STATUS "ENABLE_TEST: ${ENABLE_TEST}")
 
 if(ENABLE_ADDRESS_SANITIZER)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
@@ -82,6 +86,7 @@ if(ENABLE_CUDA)
         list(APPEND INFERENCE_LINK_DIRS ${CUDA_LIBRARY_DIRS})
         list(APPEND INFERENCE_DEP_LIBS ${CUDA_LIBRARIES})
     endif()
+
     set(CPP_TK_ENABLE_CUDA ON)
 endif()
 
@@ -97,14 +102,32 @@ add_subdirectory(3rd/cpptoolkit)
 list(APPEND INFERENCE_INC_DIRS ${ROOT_PATH}/3rd/cpptoolkit)
 list(APPEND INFERENCE_DEP_LIBS cpptoolkit)
 
-# onnxruntime
-list(APPEND INFERENCE_INC_DIRS ${ONNXRUNTIME_DIR}/include)
-list(APPEND INFERENCE_LINK_DIRS ${ONNXRUNTIME_DIR}/lib)
-list(APPEND INFERENCE_DEP_LIBS onnxruntime)
+if(ENABLE_ONNXRUNTIME)
+    message(STATUS "ONNXRUNTIME_DIR: ${ONNXRUNTIME_DIR}")
+    list(APPEND INFERENCE_INC_DIRS ${ONNXRUNTIME_DIR}/include)
+    list(APPEND INFERENCE_LINK_DIRS ${ONNXRUNTIME_DIR}/lib)
+    list(APPEND INFERENCE_DEP_LIBS onnxruntime)
+    list(APPEND INFERENCE_COMPILE_DEFS "INFER_USE_ONNXRUNTIME")
+endif()
+
+if(ENABLE_TENSORRT AND ENABLE_CUDA)
+    message(STATUS "TENSORRT_DIR: ${TENSORRT_DIR}")
+    list(APPEND INFERENCE_INC_DIRS ${TENSORRT_DIR}/include)
+    list(APPEND INFERENCE_LINK_DIRS ${TENSORRT_DIR}/lib)
+    list(APPEND INFERENCE_DEP_LIBS "nvinfer")
+    list(APPEND INFERENCE_COMPILE_DEFS "INFER_USE_TENSORRT")
+endif()
 
 add_subdirectory(inference)
-add_subdirectory(modelzoo)
-add_subdirectory(test)
+
+if(ENABLE_MODEL_ZOO)
+    add_subdirectory(modelzoo)
+endif()
+
+if(ENABLE_TEST)
+    add_subdirectory(test)
+endif()
+
 if(ENABLE_EXPERIMENT)
     add_subdirectory(experiment)
 endif()
