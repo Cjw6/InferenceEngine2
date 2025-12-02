@@ -2,10 +2,12 @@
 
 #include "inference/tensor/tensor.h"
 #include <cpptoolkit/exception/exception.h>
+#include <span>
 #include <unordered_map>
 
 namespace inference {
 
+// 支持 ONNXRuntime
 struct InferenceParams {
   // device
   DeviceType device_type = kCPU;
@@ -30,5 +32,17 @@ struct InferenceParams {
 };
 
 InferenceParams GetDefaultOnnxRuntimeEngineParams();
+
+// 未来迁移到这里， 支持 TensorRT
+struct InferenceParamsV2 {
+  std::string model_path;     // 模型文件的路径
+  std::span<char> model_data; // 模型文件的数据
+  DeviceType device_type = kCPU;
+  int device_id = 0;
+  int batch_size = 1;
+  std::map<const char *, std::string> params;
+};
+
+InferenceParamsV2 GetDefaultTensorRTEngineParams();
 
 } // namespace inference

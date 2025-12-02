@@ -29,6 +29,7 @@ struct TensorDesc {
 
 std::ostream &operator<<(std::ostream &s, const TensorDesc &tensor_desc);
 
+// TODO 这里需要和TensorDesc合并
 // 如果是 dynamic 模型，这里保存每个batch的指针，数据指的是的单个batch的大小
 struct TensorDataPointer {
   TensorDataPointer() {}
@@ -77,14 +78,24 @@ size_t GetElemMemSize(TensorDataType data_type, size_t element_size);
 // 这里为了处理动态大小的模型， 所以需要根据batch_size来计算元素数量
 int64_t GetElemCntFromShape(const std::vector<int64_t> &v,
                             int64_t batch_size = 1);
+
 int64_t GetSingleBatchElemCntFromShape(const std::vector<int64_t> &v);
 
 // mem_size
+
+// 通过shape计算出满足shape和data_type的mem_size,
+// 如果是动态模型，使用batch_size来计算
 int64_t GetMemSizeFromShape(const std::vector<int64_t> &v,
                             TensorDataType data_type, int batch_size = 1);
+
 int64_t GetSingleBatchMemSizeFromShape(const std::vector<int64_t> &v,
                                        TensorDataType data_type);
 
+// create buffer
+
 TensorBufferUPtr CreateTensorBufferCPU(TensorDataType data_type,
                                        size_t mem_size);
+
+TensorBufferUPtr CreateTensorBuffer(size_t mem_size, BufferType buffer_type);
+
 } // namespace inference

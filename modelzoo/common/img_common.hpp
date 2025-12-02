@@ -85,4 +85,14 @@ std::tuple<cv::Mat, float> LetterBoxPadImage(const cv::Mat &image,
 
 std::vector<cv::Scalar> GetRandomColor(int num);
 
+inline void readPGMFile(const std::string& fileName, uint8_t* buffer, int32_t inH, int32_t inW)
+{
+    std::ifstream infile(fileName, std::ifstream::binary);
+    assert(infile.is_open()); // && "Attempting to read from a file that is not open.");
+    std::string magic, w, h, max;
+    infile >> magic >> w >> h >> max;
+    infile.seekg(1, infile.cur);
+    infile.read(reinterpret_cast<char*>(buffer), inH * inW);
+}
+
 } // namespace imgutils

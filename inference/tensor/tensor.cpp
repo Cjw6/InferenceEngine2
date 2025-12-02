@@ -132,4 +132,10 @@ TensorBufferUPtr CreateTensorBufferCPU(TensorDataType data_type,
   return TensorBufferUPtr(buffer);
 }
 
+TensorBufferUPtr CreateTensorBuffer(size_t mem_size, BufferType buffer_type) {
+  auto *buffer = BufferFactory::createBuffer(buffer_type);
+  buffer->allocate(mem_size);
+  return TensorBufferUPtr(buffer);
+}
+
 } // namespace inference

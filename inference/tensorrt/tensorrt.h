@@ -13,26 +13,24 @@
 
 namespace inference {
 
-class OnnxRuntimeEngineImpl;
+class TensorRTEngineImpl;
 
-class OnnxRuntimeEngine : public InferenceEngine {
+class TensorRTEngine : public InferenceEngine {
 public:
-  OnnxRuntimeEngine();
-  virtual ~OnnxRuntimeEngine();
+  TensorRTEngine();
+  virtual ~TensorRTEngine();
 
-  CPP_TK_NON_COPY_CONSTRUCT(OnnxRuntimeEngine);
-  CPP_TK_NON_MOVE_CONSTRUCT(OnnxRuntimeEngine);
+  CPP_TK_NON_COPY_CONSTRUCT(TensorRTEngine);
+  CPP_TK_NON_MOVE_CONSTRUCT(TensorRTEngine);
 
   int Init(const InferenceParams &params = {}) override;
-  int Init(const InferenceParamsV2 &params = {}) override { return -1; }
+  int Init(const InferenceParamsV2 &params = {}) override;
   void Deinit() override;
 
   int Warmup() override;
 
-  /*batch_size 为 -1 时，
-  如果是静态张量模型，默认使用固定shape推理
-  如果是动态张量模型，默认使用单batch推理
-  batch_size 为其他值时，在动态张量模型使用指定batch_size推理*/
+  void CopyInputToDevice() override;
+  void CopyOutputToHost() override;
   int Run(int batch_size = -1) override;
 
   bool IsReady() const override;
@@ -43,15 +41,15 @@ public:
   int InputsNums() const override;
   const InputNodeNames &GetInputNodeNames() const override;
   const InputTensorDescs &GetInputTensorDescs() const override;
-  InputTensorPointers GetInputTensors() override;
+  InputTensorPointers GetInputTensors(DeviceType device = kCPU) override;
 
   int OutputsNums() const override;
   const OutputNodeNames &GetOutputNodeNames() const override;
   const OutputTensorDescs &GetOutputTensorDescs() const override;
-  OutputTensorPointers GetOutputTensors() override;
+  OutputTensorPointers GetOutputTensors(DeviceType device = kCPU) override;
 
 private:
-  OnnxRuntimeEngineImpl *impl_ = nullptr;
+  std::unique_ptr<TensorRTEngineImpl> impl_;
 };
 
 } // namespace inference

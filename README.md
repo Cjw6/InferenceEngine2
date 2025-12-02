@@ -2,10 +2,19 @@
 
 ## how to build
 
+### build all(onnxruntime + cuda + tensorrt)  debug
+
 ```bash
 conda activate my_cpp_env
 python ./tools/build_tool2.py -c linux_cmake_debug
 python ./tools/build_tool2.py -c linux_build_debug -- --target all
+```
+## build tensorrt debug
+
+```bash
+conda activate my_cpp_env
+python ./tools/build_tool2.py   -c  linux_cmake_debug_trt
+python ./tools/build_tool2.py   -c  linux_build_debug_trt
 ```
 
 ## set env

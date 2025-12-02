@@ -33,7 +33,7 @@ def build_argparser():
 
 def config_map():
     conf_map = {
-        "linux_cmake_debug": [
+        "linux_cmake_debug_all": [
             "cmake",
             "-DCMAKE_BUILD_TYPE=Debug",
             "-S",
@@ -53,10 +53,34 @@ def config_map():
             "-DENABLE_TENSORRT=ON",
             "-DTENSORRT_DIR=/home/cjw/lib/TensorRT-10.13.3.9",
         ],
-        "linux_build_debug": [
+        "linux_build_debug_all": [
             "cmake",
             "--build",
             "./build/debug",
+        ],
+        "linux_cmake_debug_trt": [
+            "cmake",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-S",
+            ".",
+            "-B",
+            "./build/debug_trt",
+            "-G",
+            "Ninja",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DENABLE_STACKTRACE=ON",
+            "-DENABLE_ASSERTS=ON",
+            "-DENABLE_CUDA=ON",
+            "-DCUDA_PATH=/usr/local/cuda",
+            "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
+            "-DENABLE_TENSORRT=ON",
+            "-DTENSORRT_DIR=/home/cjw/lib/TensorRT-10.13.3.9",
+            "-DENABLE_MODEL_ZOO=ON"
+        ],
+        "linux_build_debug_trt": [
+            "cmake",
+            "--build",
+            "./build/debug_trt",
         ],
     }
     return conf_map
